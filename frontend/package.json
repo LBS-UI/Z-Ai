@@ -1,0 +1,9 @@
+{
+  "name": "zimelia-ai-frontend",
+  "version": "1.0.0",
+  "description": "Zimelia's body — the website UI. Talks to the backend over the /api routes.",
+  "private": true,
+  "scripts": {
+    "start": "node server.js"
+  }
+}
