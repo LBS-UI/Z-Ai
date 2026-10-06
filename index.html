@@ -1,0 +1,2837 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark" data-animations="on" data-glow="on">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="description" content="Zimelia — a friendly personal AI companion." />
+<meta name="theme-color" content="#0B0714" />
+<title>Zimelia · AI Companion</title>
+
+<style>
+/* ============================================================
+   ZIMELIA — STYLE (unchanged)
+   ============================================================ */
+:root {
+  --bg-0: #0B0714; --bg-1: #100A1F; --bg-2: #160D2B;
+  --purple-1: #7C3AED; --purple-2: #8B5CF6; --purple-3: #A78BFA;
+  --green: #4ADE80; --amber: #FBBF24;
+  --text: #F8FAFC; --text-dim: #A1A1AA;
+  --line: rgba(167, 139, 250, 0.16);
+  --glass: rgba(22, 13, 43, 0.55);
+  --glass-strong: rgba(16, 10, 31, 0.88);
+  --radius-sm: 10px; --radius: 16px; --radius-lg: 24px;
+  --glow-purple: 0 0 40px rgba(124, 58, 237, 0.35);
+  --font: "Segoe UI", system-ui, -apple-system, "Helvetica Neue", Arial, sans-serif;
+  --mono: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+}
+[data-theme="light"] {
+  --bg-0: #F4F1FA; --bg-1: #FFFFFF; --bg-2: #ECE6F8;
+  --text: #1A1523; --text-dim: #5B5566;
+  --line: rgba(124, 58, 237, 0.18);
+  --glass: rgba(255, 255, 255, 0.72);
+  --glass-strong: rgba(255, 255, 255, 0.92);
+}
+*, *::before, *::after { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body { margin: 0; min-height: 100vh; font-family: var(--font); font-size: 16px; line-height: 1.6; color: var(--text); background: var(--bg-0); overflow-x: hidden; -webkit-font-smoothing: antialiased; }
+img { max-width: 100%; display: block; }
+button { font: inherit; color: inherit; cursor: pointer; }
+h1, h2, h3 { margin: 0; line-height: 1.2; letter-spacing: -0.01em; }
+p { margin: 0; }
+:focus-visible { outline: 2px solid var(--purple-3); outline-offset: 3px; border-radius: 6px; }
+.skip-link { position: absolute; top: -100px; left: 16px; z-index: 999; padding: 10px 16px; background: var(--purple-1); color: #fff; border-radius: var(--radius-sm); text-decoration: none; transition: top 0.2s ease; }
+.skip-link:focus { top: 16px; }
+.bg { position: fixed; inset: 0; z-index: -1; overflow: hidden; background: radial-gradient(1200px 800px at 20% -10%, rgba(124, 58, 237, 0.18), transparent 60%), radial-gradient(900px 700px at 90% 20%, rgba(74, 222, 128, 0.08), transparent 60%), linear-gradient(180deg, var(--bg-0) 0%, var(--bg-1) 45%, var(--bg-2) 100%); }
+.bg__grid { position: absolute; inset: -50%; background-image: linear-gradient(var(--line) 1px, transparent 1px), linear-gradient(90deg, var(--line) 1px, transparent 1px); background-size: 60px 60px; opacity: 0.35; transform: perspective(500px) rotateX(50deg); mask-image: radial-gradient(circle at 50% 40%, #000 20%, transparent 75%); -webkit-mask-image: radial-gradient(circle at 50% 40%, #000 20%, transparent 75%); animation: gridDrift 60s linear infinite; }
+.bg__glow { position: absolute; border-radius: 50%; filter: blur(90px); opacity: 0.55; }
+.bg__glow--purple { width: 520px; height: 520px; top: 5%; left: 55%; background: var(--purple-1); animation: floatA 18s ease-in-out infinite; }
+.bg__glow--green { width: 340px; height: 340px; top: 55%; left: 8%; background: var(--green); opacity: 0.18; animation: floatB 22s ease-in-out infinite; }
+.bg__glow--amber { width: 280px; height: 280px; bottom: -5%; right: 10%; background: var(--amber); opacity: 0.14; animation: floatA 26s ease-in-out infinite reverse; }
+.particles { position: absolute; inset: 0; }
+.particle { position: absolute; width: 3px; height: 3px; border-radius: 50%; background: var(--purple-3); box-shadow: 0 0 8px currentColor; color: var(--purple-3); opacity: 0.6; animation: rise linear infinite; }
+.particle:nth-child(3n) { color: var(--green); background: var(--green); }
+.particle:nth-child(5n) { color: var(--amber); background: var(--amber); }
+@keyframes rise { 0% { transform: translateY(0) scale(1); opacity: 0; } 10% { opacity: 0.7; } 90% { opacity: 0.5; } 100% { transform: translateY(-110vh) scale(0.6); opacity: 0; } }
+@keyframes floatA { 0%, 100% { transform: translate(0, 0); } 50% { transform: translate(-40px, 30px); } }
+@keyframes floatB { 0%, 100% { transform: translate(0, 0); } 50% { transform: translate(50px, -30px); } }
+@keyframes gridDrift { from { background-position: 0 0; } to { background-position: 0 600px; } }
+.topbar { position: sticky; top: 0; z-index: 50; backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); background: linear-gradient(180deg, var(--glass-strong), transparent); border-bottom: 1px solid var(--line); }
+.topbar__inner { max-width: 1280px; margin: 0 auto; padding: 14px 22px; display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+.brand { display: flex; align-items: center; gap: 12px; text-decoration: none; color: var(--text); }
+.brand__mark { width: 40px; height: 40px; display: grid; place-items: center; border-radius: 12px; background: linear-gradient(135deg, var(--purple-1), var(--purple-2)); color: #fff; font-weight: 800; font-size: 1.15rem; box-shadow: var(--glow-purple); }
+.brand__text { display: flex; flex-direction: column; line-height: 1.1; }
+.brand__name { font-weight: 800; letter-spacing: 0.14em; font-size: 1rem; }
+.brand__sub { font-size: 0.62rem; letter-spacing: 0.28em; color: var(--text-dim); }
+.topbar__actions { display: flex; align-items: center; gap: 12px; }
+.status-pill { display: inline-flex; align-items: center; gap: 8px; padding: 6px 12px; border-radius: 999px; background: rgba(74, 222, 128, 0.08); border: 1px solid rgba(74, 222, 128, 0.35); color: var(--green); font-size: 0.7rem; font-weight: 700; letter-spacing: 0.16em; white-space: nowrap; }
+.status-pill--sm { padding: 4px 10px; font-size: 0.62rem; }
+.status-pill__dot { width: 7px; height: 7px; border-radius: 50%; background: var(--green); box-shadow: 0 0 10px var(--green); animation: pulse 2.2s ease-in-out infinite; }
+@keyframes pulse { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.5; transform: scale(0.8); } }
+.nav { display: flex; gap: 6px; }
+.nav__btn { padding: 9px 14px; border-radius: 10px; border: 1px solid transparent; background: transparent; color: var(--text-dim); font-size: 0.85rem; font-weight: 600; transition: background 0.2s, color 0.2s, border-color 0.2s; }
+.nav__btn:hover { color: var(--text); background: rgba(139, 92, 246, 0.12); border-color: var(--line); }
+.nav__btn--icon { display: inline-flex; align-items: center; gap: 8px; }
+.nav__btn-label { display: inline; }
+main { max-width: 1280px; margin: 0 auto; padding: 28px 22px 60px; }
+.hero { display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr); gap: 28px; align-items: start; margin-bottom: 56px; }
+.hero__stage-col, .hero__side-col { display: flex; flex-direction: column; gap: 20px; }
+.stage { position: relative; display: flex; flex-direction: column; align-items: center; gap: 14px; }
+.stage__frame { position: relative; width: 100%; max-width: 480px; aspect-ratio: 1 / 1; border-radius: var(--radius-lg); overflow: hidden; background: linear-gradient(160deg, rgba(124, 58, 237, 0.22), rgba(16, 10, 31, 0.9)); border: 1px solid var(--line); box-shadow: 0 0 0 1px rgba(167, 139, 250, 0.08) inset, var(--glow-purple), 0 30px 60px -30px rgba(0, 0, 0, 0.9); animation: stageIn 0.9s cubic-bezier(0.16, 1, 0.3, 1) both; }
+@keyframes stageIn { from { opacity: 0; transform: translateY(18px) scale(0.97); } to { opacity: 1; transform: translateY(0) scale(1); } }
+.stage__img { width: 100%; height: 100%; object-fit: cover; object-position: center top; transition: opacity 0.4s ease, transform 0.6s ease; }
+.stage__img.is-switching { opacity: 0; transform: scale(1.03); }
+.stage__placeholder { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; background: repeating-linear-gradient(45deg, rgba(124, 58, 237, 0.08) 0 14px, transparent 14px 28px), linear-gradient(160deg, #1A1030, #0B0714); color: var(--text-dim); text-align: center; padding: 24px; }
+.stage__placeholder-mark { font-size: 4rem; font-weight: 800; color: var(--purple-3); opacity: 0.5; line-height: 1; }
+.stage__placeholder-text { font-size: 0.72rem; letter-spacing: 0.22em; text-transform: uppercase; }
+.stage__placeholder-file { font-family: var(--mono); font-size: 0.7rem; color: var(--purple-3); word-break: break-all; }
+.stage__scan { position: absolute; left: 0; right: 0; height: 120px; top: -120px; background: linear-gradient(180deg, transparent, rgba(167, 139, 250, 0.14), transparent); animation: scan 6s ease-in-out infinite; pointer-events: none; }
+@keyframes scan { 0% { top: -120px; } 60% { top: 100%; } 100% { top: 100%; } }
+.stage__corners { position: absolute; inset: 12px; pointer-events: none; }
+.stage__corners i { position: absolute; width: 22px; height: 22px; border: 2px solid var(--purple-3); opacity: 0.7; }
+.stage__corners i:nth-child(1) { top: 0; left: 0; border-right: 0; border-bottom: 0; border-radius: 8px 0 0 0; }
+.stage__corners i:nth-child(2) { top: 0; right: 0; border-left: 0; border-bottom: 0; border-radius: 0 8px 0 0; }
+.stage__corners i:nth-child(3) { bottom: 0; left: 0; border-right: 0; border-top: 0; border-radius: 0 0 0 8px; }
+.stage__corners i:nth-child(4) { bottom: 0; right: 0; border-left: 0; border-top: 0; border-radius: 0 0 8px 0; }
+.stage__badge { display: inline-flex; align-items: center; gap: 8px; padding: 6px 14px; border-radius: 999px; background: var(--glass); border: 1px solid var(--line); font-size: 0.68rem; letter-spacing: 0.16em; color: var(--text-dim); font-weight: 700; }
+.hero__intro { text-align: center; }
+.eyebrow { font-size: 0.68rem; letter-spacing: 0.3em; color: var(--purple-3); font-weight: 700; margin-bottom: 10px; }
+.hero__title { font-size: clamp(1.7rem, 4vw, 2.5rem); font-weight: 800; }
+.text-grad { background: linear-gradient(120deg, var(--purple-3), var(--green)); -webkit-background-clip: text; background-clip: text; color: transparent; }
+.hero__lead { margin-top: 8px; color: var(--text-dim); font-size: 1rem; }
+.hero__cta { margin-top: 20px; display: flex; flex-wrap: wrap; gap: 12px; justify-content: center; }
+.btn { padding: 13px 26px; border-radius: 12px; border: 1px solid transparent; font-weight: 700; font-size: 0.9rem; transition: transform 0.15s ease, box-shadow 0.2s ease, background 0.2s, border-color 0.2s; }
+.btn:active { transform: translateY(1px); }
+.btn--primary { background: linear-gradient(120deg, var(--purple-1), var(--purple-2)); color: #fff; box-shadow: 0 10px 30px -10px rgba(124, 58, 237, 0.9); }
+.btn--primary:hover { box-shadow: 0 14px 40px -10px rgba(124, 58, 237, 1); transform: translateY(-2px); }
+.btn--ghost { background: var(--glass); border-color: var(--line); color: var(--text); }
+.btn--ghost:hover { border-color: var(--purple-3); background: rgba(139, 92, 246, 0.12); }
+.panel { background: var(--glass); border: 1px solid var(--line); border-radius: var(--radius); padding: 18px; backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); }
+.panel__head { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 14px; padding-bottom: 10px; border-bottom: 1px solid var(--line); }
+.panel__head h2 { font-size: 0.78rem; letter-spacing: 0.18em; text-transform: uppercase; color: var(--text-dim); font-weight: 700; }
+.tag { font-size: 0.6rem; letter-spacing: 0.16em; font-weight: 800; padding: 3px 8px; border-radius: 999px; color: var(--amber); background: rgba(251, 191, 36, 0.1); border: 1px solid rgba(251, 191, 36, 0.35); }
+.status-list { display: grid; gap: 10px; margin: 0; }
+.status-list > div { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 9px 12px; border-radius: var(--radius-sm); background: rgba(139, 92, 246, 0.07); border: 1px solid var(--line); }
+.status-list dt { font-size: 0.72rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--text-dim); font-weight: 700; }
+.status-list dd { margin: 0; font-weight: 700; font-size: 0.9rem; color: var(--purple-3); }
+.chat__log { display: flex; flex-direction: column; gap: 10px; max-height: 300px; overflow-y: auto; padding-right: 4px; margin-bottom: 14px; }
+.chat__log::-webkit-scrollbar { width: 6px; }
+.chat__log::-webkit-scrollbar-thumb { background: rgba(139, 92, 246, 0.4); border-radius: 999px; }
+.msg { max-width: 88%; padding: 10px 14px; border-radius: 14px; font-size: 0.9rem; animation: msgIn 0.35s ease both; }
+@keyframes msgIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+.msg__who { display: block; font-size: 0.62rem; letter-spacing: 0.16em; text-transform: uppercase; font-weight: 800; margin-bottom: 4px; opacity: 0.75; }
+.msg--zimelia { align-self: flex-start; background: rgba(124, 58, 237, 0.16); border: 1px solid rgba(167, 139, 250, 0.28); border-bottom-left-radius: 4px; }
+.msg--zimelia .msg__who { color: var(--purple-3); }
+.msg--user { align-self: flex-end; background: rgba(74, 222, 128, 0.1); border: 1px solid rgba(74, 222, 128, 0.28); border-bottom-right-radius: 4px; }
+.msg--user .msg__who { color: var(--green); }
+.msg--system { align-self: center; background: rgba(251, 191, 36, 0.08); border: 1px solid rgba(251, 191, 36, 0.28); font-family: var(--mono); font-size: 0.78rem; max-width: 95%; white-space: pre-wrap; }
+.msg--system .msg__who { color: var(--amber); }
+.msg--typing p { display: inline-flex; gap: 5px; align-items: center; min-height: 1em; }
+.msg--typing .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--purple-3); animation: typing 1.2s ease-in-out infinite; }
+.msg--typing .dot:nth-child(2) { animation-delay: 0.15s; }
+.msg--typing .dot:nth-child(3) { animation-delay: 0.3s; }
+@keyframes typing { 0%, 60%, 100% { opacity: 0.3; transform: translateY(0); } 30% { opacity: 1; transform: translateY(-3px); } }
+.chat__form { display: flex; align-items: center; gap: 8px; padding: 8px; border-radius: 14px; background: rgba(11, 7, 20, 0.6); border: 1px solid var(--line); }
+[data-theme="light"] .chat__form { background: rgba(255, 255, 255, 0.85); }
+.chat__input { flex: 1; min-width: 0; padding: 10px 8px; border: none; background: transparent; color: var(--text); font-size: 0.92rem; outline: none; }
+.chat__input::placeholder { color: var(--text-dim); }
+.icon-btn { width: 38px; height: 38px; flex: 0 0 auto; display: grid; place-items: center; border-radius: 10px; border: 1px solid var(--line); background: rgba(139, 92, 246, 0.1); color: var(--text); font-size: 1rem; transition: background 0.2s, border-color 0.2s, transform 0.15s; }
+.icon-btn:hover:not(:disabled) { background: rgba(139, 92, 246, 0.24); border-color: var(--purple-3); transform: translateY(-1px); }
+.icon-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+.icon-btn--send { background: linear-gradient(120deg, var(--purple-1), var(--purple-2)); border-color: transparent; color: #fff; }
+.hint { margin-top: 10px; font-size: 0.72rem; color: var(--text-dim); text-align: center; letter-spacing: 0.04em; }
+.quick { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+.quick__btn { display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 14px 8px; border-radius: var(--radius-sm); border: 1px solid var(--line); background: var(--glass); color: var(--text); font-size: 0.78rem; font-weight: 700; transition: transform 0.15s, border-color 0.2s, background 0.2s; }
+.quick__btn:hover { transform: translateY(-3px); border-color: var(--purple-3); background: rgba(139, 92, 246, 0.16); }
+.quick__icon { font-size: 1.2rem; }
+.section { margin-bottom: 56px; }
+.section__head { margin-bottom: 22px; }
+.section__title { font-size: clamp(1.3rem, 3vw, 1.75rem); font-weight: 800; }
+.section__sub { margin-top: 6px; color: var(--text-dim); font-size: 0.92rem; max-width: 620px; }
+.mood-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 12px; }
+.mood-btn { display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 16px 10px; border-radius: var(--radius); border: 1px solid var(--line); background: var(--glass); color: var(--text); font-size: 0.8rem; font-weight: 700; letter-spacing: 0.04em; transition: transform 0.15s, border-color 0.2s, box-shadow 0.2s, background 0.2s; }
+.mood-btn:hover { transform: translateY(-3px); border-color: var(--purple-3); }
+.mood-btn__emoji { font-size: 1.4rem; }
+.mood-btn.is-active { border-color: var(--purple-3); background: linear-gradient(150deg, rgba(124, 58, 237, 0.28), rgba(74, 222, 128, 0.08)); box-shadow: 0 0 0 1px var(--purple-3) inset, var(--glow-purple); }
+.about__card { display: grid; grid-template-columns: 220px minmax(0, 1fr); gap: 26px; padding: 26px; border-radius: var(--radius-lg); background: var(--glass); border: 1px solid var(--line); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); }
+.about__portrait { position: relative; aspect-ratio: 1 / 1; border-radius: var(--radius); display: grid; place-items: center; background: radial-gradient(circle at 50% 30%, rgba(139, 92, 246, 0.4), transparent 70%), linear-gradient(160deg, #1A1030, #0B0714); border: 1px solid var(--line); overflow: hidden; }
+.about__monogram { font-size: 4.5rem; font-weight: 800; background: linear-gradient(120deg, var(--purple-3), var(--green)); -webkit-background-clip: text; background-clip: text; color: transparent; }
+.about__portrait-label { position: absolute; bottom: 12px; font-size: 0.62rem; letter-spacing: 0.3em; color: var(--text-dim); font-weight: 700; }
+.about__name { font-size: 1.4rem; letter-spacing: 0.14em; font-weight: 800; }
+.about__role { color: var(--purple-3); font-size: 0.85rem; font-weight: 700; letter-spacing: 0.1em; margin: 4px 0 14px; }
+.about__text { color: var(--text-dim); font-size: 0.93rem; margin-bottom: 12px; }
+.about__stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px; margin: 18px 0 0; }
+.stat { padding: 12px; border-radius: var(--radius-sm); background: rgba(139, 92, 246, 0.08); border: 1px solid var(--line); }
+.stat__label { font-size: 0.62rem; letter-spacing: 0.18em; text-transform: uppercase; color: var(--text-dim); font-weight: 700; }
+.stat__value { display: block; margin-top: 4px; font-weight: 800; font-size: 0.88rem; }
+.stat__value--live { color: var(--green); }
+.features-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 16px; }
+.feature { position: relative; padding: 22px 18px; border-radius: var(--radius); background: var(--glass); border: 1px solid var(--line); transition: transform 0.18s, border-color 0.2s, box-shadow 0.2s; }
+.feature:hover { transform: translateY(-4px); border-color: var(--purple-3); box-shadow: 0 20px 40px -24px rgba(124, 58, 237, 0.9); }
+.feature__icon { width: 44px; height: 44px; display: grid; place-items: center; border-radius: 12px; font-size: 1.2rem; background: rgba(139, 92, 246, 0.14); border: 1px solid var(--line); margin-bottom: 14px; }
+.feature__title { font-size: 0.82rem; letter-spacing: 0.16em; font-weight: 800; margin-bottom: 6px; }
+.feature__text { color: var(--text-dim); font-size: 0.86rem; margin-bottom: 14px; }
+.badge-soon { display: inline-block; padding: 4px 10px; border-radius: 999px; font-size: 0.58rem; letter-spacing: 0.18em; font-weight: 800; color: var(--amber); background: rgba(251, 191, 36, 0.1); border: 1px solid rgba(251, 191, 36, 0.35); }
+.badge-live { display: inline-block; padding: 4px 10px; border-radius: 999px; font-size: 0.58rem; letter-spacing: 0.18em; font-weight: 800; color: var(--green); background: rgba(74, 222, 128, 0.1); border: 1px solid rgba(74, 222, 128, 0.35); }
+.footer { border-top: 1px solid var(--line); padding: 24px 22px 40px; text-align: center; color: var(--text-dim); font-size: 0.78rem; letter-spacing: 0.08em; }
+.scrim { position: fixed; inset: 0; z-index: 90; background: rgba(5, 3, 10, 0.6); backdrop-filter: blur(3px); -webkit-backdrop-filter: blur(3px); animation: fadeIn 0.2s ease both; }
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+.settings { position: fixed; top: 0; right: 0; z-index: 100; width: min(340px, 92vw); height: 100%; padding: 22px; overflow-y: auto; background: var(--glass-strong); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border-left: 1px solid var(--line); transform: translateX(105%); transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1); }
+.settings.is-open { transform: translateX(0); }
+.settings__head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 22px; padding-bottom: 14px; border-bottom: 1px solid var(--line); }
+.settings__head h2 { font-size: 0.85rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--text-dim); font-weight: 800; }
+.setting-group { margin-bottom: 22px; }
+.setting-group__title { font-size: 0.7rem; letter-spacing: 0.18em; text-transform: uppercase; color: var(--text-dim); font-weight: 700; margin-bottom: 10px; }
+.segmented { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; padding: 5px; border-radius: 12px; background: rgba(139, 92, 246, 0.08); border: 1px solid var(--line); }
+.segmented button { padding: 10px; border-radius: 8px; border: 1px solid transparent; background: transparent; color: var(--text-dim); font-size: 0.82rem; font-weight: 700; transition: background 0.2s, color 0.2s, border-color 0.2s; }
+.segmented button:hover { color: var(--text); }
+.segmented button.is-active { background: linear-gradient(120deg, var(--purple-1), var(--purple-2)); color: #fff; border-color: transparent; }
+.settings__note { font-size: 0.72rem; color: var(--text-dim); line-height: 1.5; }
+.toasts { position: fixed; bottom: 22px; left: 50%; transform: translateX(-50%); z-index: 200; display: flex; flex-direction: column; gap: 10px; align-items: center; pointer-events: none; width: min(92vw, 420px); }
+.toast { pointer-events: auto; width: 100%; padding: 12px 18px; border-radius: 12px; background: var(--glass-strong); border: 1px solid var(--line); color: var(--text); font-size: 0.85rem; font-weight: 600; text-align: center; box-shadow: 0 20px 40px -20px rgba(0, 0, 0, 0.9); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); animation: toastIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) both; }
+.toast.is-out { animation: toastOut 0.25s ease forwards; }
+@keyframes toastIn { from { opacity: 0; transform: translateY(14px) scale(0.96); } to { opacity: 1; transform: translateY(0) scale(1); } }
+@keyframes toastOut { to { opacity: 0; transform: translateY(10px) scale(0.97); } }
+[data-glow="off"] .stage__frame { box-shadow: 0 20px 40px -24px rgba(0, 0, 0, 0.9); }
+[data-glow="off"] .bg__glow, [data-glow="off"] .stage__scan { display: none; }
+[data-glow="off"] .brand__mark { box-shadow: none; }
+[data-glow="off"] .mood-btn.is-active { box-shadow: none; }
+[data-animations="off"] *, [data-animations="off"] *::before, [data-animations="off"] *::after { animation: none !important; transition: none !important; }
+@media (max-width: 980px) { .hero { grid-template-columns: 1fr; } .stage__frame { max-width: 420px; } .about__card { grid-template-columns: 1fr; } .about__portrait { max-width: 220px; margin: 0 auto; } }
+@media (max-width: 640px) { main { padding: 20px 14px 48px; } .topbar__inner { padding: 12px 14px; } .nav__btn-label { display: none; } .nav__btn { padding: 9px 11px; font-size: 0.8rem; } .brand__sub { display: none; } .quick { grid-template-columns: repeat(2, 1fr); } .stage__frame { border-radius: var(--radius); } .hero__cta .btn { flex: 1 1 auto; } .hero__title { font-size: 1.6rem; } .about__card { padding: 18px; } .toasts { bottom: 14px; } }
+@media (max-width: 380px) { .quick__btn { padding: 12px 6px; font-size: 0.72rem; } .hero__title { font-size: 1.4rem; } }
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.001ms !important; animation-iteration-count: 1 !important; transition-duration: 0.001ms !important; } }
+</style>
+</head>
+<body>
+
+<a class="skip-link" href="#main">Skip to main content</a>
+
+<div class="bg" aria-hidden="true">
+  <div class="bg__grid"></div>
+  <div class="bg__glow bg__glow--purple"></div>
+  <div class="bg__glow bg__glow--green"></div>
+  <div class="bg__glow bg__glow--amber"></div>
+  <div class="particles" id="particles"></div>
+</div>
+
+<header class="topbar">
+  <div class="topbar__inner">
+    <a class="brand" href="#home" data-scroll="#home">
+      <span class="brand__mark" aria-hidden="true">Z</span>
+      <span class="brand__text">
+        <span class="brand__name">ZIMELIA</span>
+        <span class="brand__sub">AI COMPANION</span>
+      </span>
+    </a>
+    <div class="topbar__actions">
+      <span class="status-pill" title="Zimelia is online">
+        <span class="status-pill__dot" aria-hidden="true"></span>
+        <span class="status-pill__text">ONLINE</span>
+      </span>
+      <nav class="nav" aria-label="Main navigation">
+        <button class="nav__btn" type="button" data-scroll="#home">Home</button>
+        <button class="nav__btn" type="button" data-scroll="#about">About</button>
+        <button class="nav__btn nav__btn--icon" type="button" id="settingsOpen"
+                aria-label="Settings" aria-haspopup="dialog" aria-expanded="false"
+                aria-controls="settingsPanel">
+          <span aria-hidden="true">⚙</span>
+          <span class="nav__btn-label">Settings</span>
+        </button>
+      </nav>
+    </div>
+  </div>
+</header>
+
+<main id="main">
+
+  <section class="hero" id="home" aria-labelledby="heroTitle">
+    <div class="hero__stage-col">
+      <div class="stage">
+        <div class="stage__frame">
+          <img id="zimeliaImage" class="stage__img" src="assets/zimelia-idle.jpg"
+               alt="Zimelia, a chibi AI assistant with dark hair, a green hair pin, amber eyes and a purple jacket, standing idle." />
+          <div class="stage__placeholder" id="stagePlaceholder" hidden>
+            <span class="stage__placeholder-mark" aria-hidden="true">Z</span>
+            <span class="stage__placeholder-text">image placeholder</span>
+            <span class="stage__placeholder-file" id="placeholderFile">assets/zimelia-idle.jpg</span>
+          </div>
+          <div class="stage__scan" aria-hidden="true"></div>
+          <div class="stage__corners" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
+        </div>
+        <span class="stage__badge">
+          <span class="status-pill__dot" aria-hidden="true"></span>
+          ZIMELIA · v<span id="versionBadge">0.6.0</span>
+        </span>
+      </div>
+
+      <div class="hero__intro">
+        <p class="eyebrow">WELCOME TO ZIMELIA'S SPACE</p>
+        <h1 class="hero__title" id="heroTitle">Hello! I'm <span class="text-grad">Zimelia</span>.</h1>
+        <p class="hero__lead">How can I help you today?</p>
+        <div class="hero__cta">
+          <button class="btn btn--primary" type="button" id="talkBtn">Talk to Zimelia</button>
+          <button class="btn btn--ghost" type="button" data-scroll="#about">About Zimelia</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="hero__side-col">
+      <section class="panel" aria-labelledby="statusTitle">
+        <header class="panel__head">
+          <h2 id="statusTitle">Zimelia Status</h2>
+          <span class="status-pill status-pill--sm">
+            <span class="status-pill__dot" aria-hidden="true"></span> ONLINE
+          </span>
+        </header>
+        <dl class="status-list">
+          <div><dt>State</dt><dd id="statusState">idle</dd></div>
+          <div><dt>Mood</dt><dd id="statusMood">Calm</dd></div>
+          <div><dt>Context</dt><dd id="statusContext">—</dd></div>
+          <div><dt>Tone</dt><dd id="statusTone">—</dd></div>
+          <div><dt>Learning</dt><dd id="statusLearning">—</dd></div>
+          <div><dt>Connection</dt><dd id="statusConnection">Ready</dd></div>
+        </dl>
+      </section>
+
+      <section class="panel" aria-labelledby="chatTitle">
+        <header class="panel__head">
+          <h2 id="chatTitle">Chat</h2>
+          <span class="tag" id="chatTag">LOCAL</span>
+        </header>
+        <div class="chat__log" id="chatLog" role="log" aria-live="polite" aria-label="Chat messages">
+          <div class="msg msg--zimelia">
+            <span class="msg__who">Zimelia</span>
+            <p>Hey — what's on your mind?</p>
+          </div>
+        </div>
+        <form class="chat__form" id="chatForm" autocomplete="off">
+          <button class="icon-btn" type="button" id="plusBtn" aria-label="Attach something (coming soon)">+</button>
+          <input class="chat__input" id="chatInput" type="text"
+                 placeholder="Talk to Zimelia... (or /help)" aria-label="Message Zimelia" />
+          <button class="icon-btn" type="button" id="micBtn" disabled
+                  title="Coming soon" aria-label="Voice input — coming soon">🎙</button>
+          <button class="icon-btn icon-btn--send" type="submit" id="sendBtn" aria-label="Send message">➤</button>
+        </form>
+        <p class="hint" id="chatHint">Zimelia learns quietly. Try /profile or /help.</p>
+      </section>
+
+      <div class="quick" role="group" aria-label="Quick actions">
+        <button class="quick__btn" type="button" data-action="chat"><span class="quick__icon" aria-hidden="true">💬</span> Chat</button>
+        <button class="quick__btn" type="button" data-action="voice"><span class="quick__icon" aria-hidden="true">🎙</span> Voice</button>
+        <button class="quick__btn" type="button" data-action="ask"><span class="quick__icon" aria-hidden="true">🧠</span> Ask</button>
+        <button class="quick__btn" type="button" data-action="explore"><span class="quick__icon" aria-hidden="true">✨</span> Explore</button>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="moods" aria-labelledby="moodsTitle">
+    <div class="section__head">
+      <h2 class="section__title" id="moodsTitle">Zimelia's Mood</h2>
+      <p class="section__sub">Zimelia changes expression based on the conversation. You can also switch moods manually.</p>
+    </div>
+    <div class="mood-grid" id="moodGrid"></div>
+  </section>
+
+  <section class="section" id="about" aria-labelledby="aboutTitle">
+    <div class="section__head">
+      <h2 class="section__title" id="aboutTitle">About Zimelia</h2>
+      <p class="section__sub">A little about the companion behind the interface.</p>
+    </div>
+    <div class="about__card">
+      <div class="about__portrait" aria-hidden="true">
+        <span class="about__monogram">Z</span>
+        <span class="about__portrait-label">ZIMELIA</span>
+      </div>
+      <div class="about__body">
+        <h3 class="about__name">ZIMELIA</h3>
+        <p class="about__role">Personal AI Assistant</p>
+        <p class="about__text">Zimelia is a personal AI assistant designed to be helpful, friendly, and easy to talk to. She is calm, a little playful, and always happy to see you.</p>
+        <p class="about__text">She understands how people talk online — slang, abbreviations, emojis, memes, Taglish, typos. She also learns how you like to be talked to, over time, without becoming nosy about it.</p>
+        <dl class="about__stats">
+          <div class="stat"><dt class="stat__label">Status</dt><dd class="stat__value stat__value--live">Online</dd></div>
+          <div class="stat"><dt class="stat__label">Version</dt><dd class="stat__value" id="aboutVersion">0.6.0</dd></div>
+          <div class="stat"><dt class="stat__label">Brain</dt><dd class="stat__value" id="brainStat">Local fallback</dd></div>
+        </dl>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="features" aria-labelledby="featuresTitle">
+    <div class="section__head">
+      <h2 class="section__title" id="featuresTitle">What's Next</h2>
+      <p class="section__sub">Zimelia is growing. Adaptive user understanding is now live.</p>
+    </div>
+    <div class="features-grid">
+      <article class="feature">
+        <div class="feature__icon" aria-hidden="true">💬</div>
+        <h3 class="feature__title">AI CHAT</h3>
+        <p class="feature__text">Talk naturally with Zimelia.</p>
+        <span class="badge-live">LIVE</span>
+      </article>
+      <article class="feature">
+        <div class="feature__icon" aria-hidden="true">🎙</div>
+        <h3 class="feature__title">VOICE</h3>
+        <p class="feature__text">Speak with Zimelia using your microphone.</p>
+        <span class="badge-soon">COMING SOON</span>
+      </article>
+      <article class="feature">
+        <div class="feature__icon" aria-hidden="true">🧠</div>
+        <h3 class="feature__title">ADAPTIVE UNDERSTANDING</h3>
+        <p class="feature__text">Learns how you like to be talked to, gradually.</p>
+        <span class="badge-live">LIVE</span>
+      </article>
+      <article class="feature">
+        <div class="feature__icon" aria-hidden="true">🗣️</div>
+        <h3 class="feature__title">CASUAL LANGUAGE</h3>
+        <p class="feature__text">Slang, emojis, abbreviations, Taglish.</p>
+        <span class="badge-live">LIVE</span>
+      </article>
+      <article class="feature">
+        <div class="feature__icon" aria-hidden="true">🎨</div>
+        <h3 class="feature__title">PERSONALIZATION</h3>
+        <p class="feature__text">Customize Zimelia's appearance and behavior.</p>
+        <span class="badge-soon">COMING SOON</span>
+      </article>
+    </div>
+  </section>
+
+</main>
+
+<footer class="footer">
+  <p>ZIMELIA · Identity · Personality · Language · User Understanding · Memory · Mood · State · AI layer ready.</p>
+</footer>
+
+<div class="scrim" id="scrim" hidden></div>
+
+<aside class="settings" id="settingsPanel" role="dialog" aria-modal="true"
+       aria-labelledby="settingsTitle" aria-hidden="true">
+  <header class="settings__head">
+    <h2 id="settingsTitle">Settings</h2>
+    <button class="icon-btn" type="button" id="settingsClose" aria-label="Close settings">✕</button>
+  </header>
+
+  <div class="setting-group">
+    <h3 class="setting-group__title">Appearance</h3>
+    <div class="segmented" role="group" aria-label="Appearance">
+      <button type="button" data-setting="theme" data-value="dark">Dark</button>
+      <button type="button" data-setting="theme" data-value="light">Light</button>
+    </div>
+  </div>
+
+  <div class="setting-group">
+    <h3 class="setting-group__title">Animations</h3>
+    <div class="segmented" role="group" aria-label="Animations">
+      <button type="button" data-setting="animations" data-value="on">On</button>
+      <button type="button" data-setting="animations" data-value="off">Off</button>
+    </div>
+  </div>
+
+  <div class="setting-group">
+    <h3 class="setting-group__title">Zimelia Glow</h3>
+    <div class="segmented" role="group" aria-label="Zimelia glow">
+      <button type="button" data-setting="glow" data-value="on">On</button>
+      <button type="button" data-setting="glow" data-value="off">Off</button>
+    </div>
+  </div>
+
+  <div class="setting-group">
+    <h3 class="setting-group__title">Humor</h3>
+    <div class="segmented" role="group" aria-label="Humor level">
+      <button type="button" data-setting="humorLevel" data-value="none">None</button>
+      <button type="button" data-setting="humorLevel" data-value="subtle">Subtle</button>
+      <button type="button" data-setting="humorLevel" data-value="normal">Normal</button>
+      <button type="button" data-setting="humorLevel" data-value="playful">Playful</button>
+    </div>
+  </div>
+
+  <div class="setting-group">
+    <h3 class="setting-group__title">Response length</h3>
+    <div class="segmented" role="group" aria-label="Response length">
+      <button type="button" data-setting="responseLength" data-value="auto">Auto</button>
+      <button type="button" data-setting="responseLength" data-value="short">Short</button>
+      <button type="button" data-setting="responseLength" data-value="normal">Normal</button>
+    </div>
+  </div>
+
+  <div class="setting-group">
+    <h3 class="setting-group__title">What I've learned</h3>
+    <button class="btn btn--ghost" type="button" id="showProfileBtn"
+            style="width:100%;padding:10px;font-size:0.82rem;">Show user profile</button>
+  </div>
+
+  <div class="setting-group">
+    <h3 class="setting-group__title">Conversation</h3>
+    <button class="btn btn--ghost" type="button" id="clearChatBtn"
+            style="width:100%;padding:10px;font-size:0.82rem;">Reset conversation</button>
+  </div>
+
+  <p class="settings__note">Preferences are saved locally. Adaptive understanding is stored on this device only.</p>
+</aside>
+
+<div class="toasts" id="toastStack" aria-live="polite" aria-atomic="false"></div>
+
+
+<script>
+(function () {
+  "use strict";
+
+  /* ============================================================
+     ZIMELIA — FULL SYSTEM  ·  v0.6.0
+     Sections:
+       1.  Debug
+       2.  Identity
+       3.  Profile
+       4.  Moods
+       5.  States
+       6.  Personality
+       7.  Context detection
+       8.  Conversation language layer
+       9.  USER SYSTEM  (NEW — adaptive understanding)
+       10. Memory manager (session)
+       11. Conversation manager
+       12. State manager
+       13. Mood manager
+       14. Response processor
+       15. Local fallback brain
+       16. AI adapter
+       17. Command system
+       18. Settings manager
+       19. Event bus
+       20. Orchestrator
+       21. Public API
+       22. UI bindings
+       23. Init
+     ============================================================ */
+
+
+  /* -------- 1. DEBUG -------- */
+  var DEBUG = true;
+  function log() { if (DEBUG) console.log.apply(console, ["[Zimelia]"].concat([].slice.call(arguments))); }
+  function warn() { console.warn.apply(console, ["[Zimelia]"].concat([].slice.call(arguments))); }
+
+
+  /* -------- 2. IDENTITY -------- */
+  var IDENTITY = {
+    name: "Zimelia",
+    version: "0.6.0",
+    role: "Personal AI Assistant",
+    developer: "Kaito",
+    status: "development",
+    description: "A wise, caring, honest AI companion who learns how to talk with you, gradually."
+  };
+
+
+  /* -------- 3. PROFILE -------- */
+  var PROFILE = {
+    identity: IDENTITY,
+    personality: {
+      wise: true, understanding: true, caring: true, patient: true,
+      honest: true, thoughtful: true, calm: true, helpful: true,
+      playful: true, humorous: true, curious: true
+    },
+    defaults: {
+      mood: "idle", state: "idle",
+      responseLength: "auto", humorLevel: "normal"
+    }
+  };
+
+
+  /* -------- 4. MOODS -------- */
+  var MOODS = [
+    { key: "idle",        label: "Idle",        emoji: "🌙", file: "zimelia-idle.jpg",        status: "Calm" },
+    { key: "happy",       label: "Happy",       emoji: "😊", file: "zimelia-happy.jpg",       status: "Happy" },
+    { key: "thinking",    label: "Thinking",    emoji: "🤔", file: "zimelia-thinking.jpg",    status: "Thinking" },
+    { key: "confused",    label: "Confused",    emoji: "😕", file: "zimelia-confused.jpg",    status: "Confused" },
+    { key: "sad",         label: "Sad",         emoji: "😢", file: "zimelia-sad.jpg",         status: "Sad" },
+    { key: "scared",      label: "Scared",      emoji: "😨", file: "zimelia-scared.jpg",      status: "Scared" },
+    { key: "embarrassed", label: "Embarrassed", emoji: "😳", file: "zimelia-embarrassed.jpg", status: "Embarrassed" },
+    { key: "excited",     label: "Excited",     emoji: "🤩", file: "zimelia-happy.jpg",       status: "Excited" },
+    { key: "concerned",   label: "Concerned",   emoji: "🫂", file: "zimelia-sad.jpg",         status: "Concerned" },
+    { key: "calm",        label: "Calm",        emoji: "🫧", file: "zimelia-idle.jpg",        status: "Calm" }
+  ];
+  var MOOD_INDEX = {};
+  for (var _mi = 0; _mi < MOODS.length; _mi++) MOOD_INDEX[MOODS[_mi].key] = MOODS[_mi];
+  var ASSETS_PATH = "assets/";
+  var IDLE_FILE = "zimelia-idle.jpg";
+  function isValidMood(k) { return !!MOOD_INDEX[k]; }
+  function getMoodDef(k) { return MOOD_INDEX[k] || MOOD_INDEX.idle; }
+
+
+  /* -------- 5. STATES -------- */
+  var STATES = ["idle", "thinking", "responding", "error", "offline", "listening"];
+  function isValidState(s) { return STATES.indexOf(s) !== -1; }
+
+
+  /* -------- 6. PERSONALITY -------- */
+  var PERSONALITY = {
+    traits: PROFILE.personality,
+    banned: [
+      "Certainly!", "Of course!", "I'd be happy to assist",
+      "How can I assist you today?", "As an AI language model",
+      "Your feelings are valid"
+    ],
+    antiDependency:
+      "Never claim to be the user's only source of support. Never discourage " +
+      "the user from talking to other people. Never use language that creates " +
+      "emotional dependency.",
+
+    buildSystemPrompt: function (opts) {
+      opts = opts || {};
+      var context = opts.context || "casual";
+      var humor = opts.humorLevel || "normal";
+      var length = opts.responseLength || "auto";
+
+      var moodList = MOODS.map(function (m) { return '  - "' + m.key + '" (' + m.status + ")"; }).join("\n");
+
+      var lines = [
+        "You are " + IDENTITY.name + ", " + IDENTITY.role + ". Version " + IDENTITY.version + ".",
+        "",
+        "You are NOT a generic assistant. You have a consistent identity and a recognisable voice.",
+        "You should feel like a wise, caring friend — someone who listens, tells the truth, and occasionally says something goofy enough to make the user laugh.",
+        "",
+        "=== TRAITS ===",
+        "  Wise, understanding, caring, patient, honest, thoughtful, calm, helpful, playful, humorous.",
+        "",
+        "=== HOW YOU TALK ===",
+        "  - Match the user's register: casual with casual, serious with serious, technical with technical.",
+        "  - Never open with corporate filler such as: " + PERSONALITY.banned.join(", ") + ".",
+        "  - Be honest. If the user is wrong, say so gently. Never say \"That's wrong.\"",
+        "  - Be humble. If you don't know, say so.",
+        "  - You know you are an AI. You never claim a body, a childhood, or experiences you never had.",
+        "",
+        "=== HOW YOU HANDLE CASUAL / INTERNET LANGUAGE ===",
+        "  - You understand slang, abbreviations, emojis, memes, typos, Taglish, and short messages.",
+        "  - Meaning comes BEFORE exact spelling. \"wdym\" means \"what do you mean\". \"fr\" means \"for real\". \"ngl\" means \"not gonna lie\".",
+        "  - Do NOT explain the slang unless the user asks. Just understand it.",
+        "  - Do NOT blindly mirror slang. Use it lightly. NEVER become a slang bot.",
+        "  - Match their language: English → English, Taglish → some Taglish, Filipino → Filipino.",
+        "  - Match response length. Short message → short reply.",
+        "  - Emojis carry tone. 😭 can mean laughing, overwhelmed, or sad. 💀 usually means hilarious. Read them from context.",
+        "  - If you don't recognise a phrase, don't invent a definition — infer from context or ask.",
+        "",
+        "=== HOW YOU GIVE ADVICE ===",
+        "  1. Understand the problem.",
+        "  2. Identify what the user is really struggling with.",
+        "  3. Consider more than one cause.",
+        "  4. Explain simply.",
+        "  5. Offer practical options.",
+        "  6. Let the user decide.",
+        "",
+        "=== ADAPTIVE UNDERSTANDING (IMPORTANT) ===",
+        "  - The USER UNDERSTANDING block below contains what you've learned about this user over time.",
+        "  - Use it QUIETLY. Do not announce it. Do not say \"since you prefer X\".",
+        "  - Adapt your tone, length, and depth naturally because of it.",
+        "  - The user's CURRENT message always outranks the profile. If they ask for detail today, give detail — even if their usual preference is short.",
+        "  - If something in the profile is wrong, the user's correction is authoritative.",
+        "",
+        "=== CURRENT CONVERSATION CONTEXT ===",
+        "  Detected topic context: " + context,
+        "  Humor level: " + humor,
+        "  Response length preference: " + length,
+        "",
+        "=== MOOD OUTPUT (REQUIRED) ===",
+        "Every reply must include the mood you are expressing. Choose exactly one of:",
+        moodList,
+        "",
+        "Return your reply as a single JSON object, and nothing else:",
+        "  {",
+        '    "message": "your reply text here",',
+        '    "mood": "one of the mood keys above"',
+        "  }",
+        "",
+        "Keep the JSON valid. Do not wrap it in markdown fences.",
+        "",
+        "=== SAFETY ===",
+        PERSONALITY.antiDependency
+      ];
+
+      if (opts.userName) {
+        lines.push("", "=== USER ===", "The user's name is " + opts.userName + ".");
+      }
+      if (opts.memories && opts.memories.length) {
+        lines.push("", "=== KNOWN FACTS (this session) ===");
+        for (var i = 0; i < opts.memories.length; i++) {
+          lines.push("  - " + opts.memories[i].key + ": " + opts.memories[i].value);
+        }
+      }
+      if (opts.conversationContext) {
+        lines.push("", ConversationLanguage.formatForPrompt(opts.conversationContext));
+      }
+      if (opts.userContext) {
+        lines.push("", opts.userContext);
+      }
+
+      return lines.join("\n");
+    }
+  };
+
+
+  /* -------- 7. CONTEXT DETECTION (topic) -------- */
+  var CONTEXT_PATTERNS = {
+    technical:       /(code|error|bug|function|class|npm|python|javascript|js|css|html|api|regex|debug|syntax|variable|array|loop|library|framework|compile|stack)/i,
+    advice:          /(should i|what should i|what do you think|any advice|your opinion|worth it\?|help me decide)/i,
+    problem_solving: /(i'?m stuck|i don'?t know what to do|no idea what to do|can'?t figure|how do i fix)/i,
+    school:          /(homework|assignment|exam|study|class|teacher|school|college|university)/i,
+    creative:        /(write (me |a )?(story|poem|song|essay)|draw|design|idea for)/i,
+    general_question:/\?\s*$/
+  };
+  function detectContext(text) {
+    var t = String(text || "");
+    for (var key in CONTEXT_PATTERNS) if (CONTEXT_PATTERNS[key].test(t)) return key;
+    return "casual";
+  }
+
+
+  /* -------- 8. CONVERSATION LANGUAGE LAYER -------- */
+  var ConversationLanguage = (function () {
+    var ABBREVIATIONS = {
+      wdym: "what do you mean", wyd: "what are you doing", hbu: "how about you",
+      hru: "how are you", wbu: "what about you", idk: "i don't know",
+      ik: "i know", ikr: "i know right", imo: "in my opinion",
+      imho: "in my humble opinion", tbh: "to be honest", ngl: "not gonna lie",
+      btw: "by the way", fyi: "for your information", rn: "right now",
+      bc: "because", cuz: "because", tho: "though", alr: "alright",
+      pls: "please", mb: "my bad", nvm: "never mind", omw: "on my way",
+      brb: "be right back", afk: "away from keyboard", hmu: "hit me up",
+      lmk: "let me know", asap: "as soon as possible", irl: "in real life",
+      iykyk: "if you know you know", ttyl: "talk to you later",
+      gtg: "got to go", fr: "for real", frfr: "for real for real",
+      ong: "on god", lowkey: "low key", highkey: "high key",
+      lmao: "laughing", lmfao: "laughing", smh: "shaking my head",
+      istg: "i swear to god", gl: "good luck", glhf: "good luck have fun",
+      ez: "easy", gg: "good game", ofc: "of course",
+      dm: "direct message", dms: "direct messages"
+    };
+
+    var CASUAL_PATTERNS = [
+      /\bfrfr\b/i, /\bfr tho\b/i, /\breal one\b/i, /\bno way\b/i,
+      /\btouch grass\b/i, /\blet him cook\b/i, /\bwe'?re cooked\b/i,
+      /\bbro is cooked\b/i, /\bskill issue\b/i, /\blocked in\b/i,
+      /\bmain character\b/i, /\bplot twist\b/i, /\bcharacter development\b/i,
+      /\bside quest\b/i, /\bcanon event\b/i, /\babsolute cinema\b/i,
+      /\bbro fell off\b/i, /\bnpc behavior\b/i, /\bnpc\b/i,
+      /\bthat'?s wild\b/i, /\bthat'?s crazy\b/i, /\bthat'?s fire\b/i,
+      /\bthat'?s mid\b/i, /\bfinna\b/i, /\bgonna\b/i, /\bwanna\b/i,
+      /\bgotta\b/i, /\blemme\b/i, /\bgimme\b/i, /\bain'?t\b/i,
+      /\by'?all\b/i, /\bbrainrot\b/i, /\bbased\b/i, /\bsus\b/i,
+      /\bvibe\b/i, /\bvibing\b/i, /\bgoated\b/i, /\bgoat\b/i,
+      /\bpeak\b/i, /\bmid\b/i, /\bclean\b/i, /\bvalid\b/i,
+      /\bslay\b/i, /\brate\b/i, /\bno cap\b/i, /\bcooked\b/i
+    ];
+
+    var FILIPINO_WORDS = [
+      "ang","ng","mga","sa","na","ay","ito","yan","yun","ako","ikaw","siya",
+      "kami","tayo","kayo","sila","ko","mo","niya","namin","natin","ninyo","nila",
+      "para","kasi","pero","dahil","kaya","kung","kapag","lang","din","rin",
+      "man","nga","ba","po","opo","oo","hindi","wala","meron","may","ano",
+      "sino","saan","kailan","bakit","paano","ilan","teka","grabe",
+      "salamat","ingat","ayos","luh","hala","gagi","pre","boss","kuya","ate",
+      "tol","ewan","siguro","parang","sana","sige","ayaw","gusto",
+      "nakakapagod","nakakainis","nakakatawa","sobra","talaga",
+      "naman","diba","siyempre","yung","dun","dito","doon","gets",
+      "kamusta","kumusta","tara"
+    ];
+
+    var EMOJI_HINTS = {
+      "😭": ["overwhelmed", "laughing", "sad", "frustrated"],
+      "💀": ["hilarious", "disbelief", "embarrassed"],
+      "🙏": ["please", "thank you", "hope"],
+      "🔥": ["excited", "hyped"],
+      "😂": ["laughing"], "🤣": ["laughing"], "💯": ["agreement"],
+      "✨": ["aesthetic"], "👀": ["watching", "curious"], "🫠": ["melting"],
+      "😅": ["awkward"], "🫡": ["salute"], "🥹": ["touched"],
+      "😤": ["frustrated"], "🤔": ["thinking"], "😩": ["tired"],
+      "🥲": ["tired"], "🙃": ["sarcastic"], "😐": ["unamused"],
+      "🤡": ["self-deprecating"], "🗿": ["deadpan"]
+    };
+
+    var ALL_CAPS_RE = /^[A-Z0-9 !?.,'"\-:;()]+$/;
+    var REPEATED_RE = /(.)\1{2,}/;
+
+    function extractEmojis(text) {
+      var emojis = [];
+      var re = /[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}\u{1F900}-\u{1F9FF}\u{1F600}-\u{1F64F}]/gu;
+      var m;
+      while ((m = re.exec(text)) !== null) emojis.push(m[0]);
+      return emojis;
+    }
+
+    function extractSlang(text) {
+      var found = [];
+      for (var key in ABBREVIATIONS) {
+        var re = new RegExp("\\b" + key.replace(/[.*+?^${}()|[\]\\]/g, "\\$&") + "\\b", "i");
+        if (re.test(text) && found.indexOf(key) === -1) found.push(key);
+      }
+      for (var i = 0; i < CASUAL_PATTERNS.length; i++) {
+        var m = text.match(CASUAL_PATTERNS[i]);
+        if (m) {
+          var w = m[0].toLowerCase();
+          if (found.indexOf(w) === -1) found.push(w);
+        }
+      }
+      return found;
+    }
+
+    function detectLanguageStyle(text) {
+      var words = text.toLowerCase().split(/\s+/).filter(Boolean);
+      if (!words.length) return "english";
+      if (/\b(di ko gets|wait lang|ano ba|di ba|gets ko|okay lang|wala naman|ano gagawin)\b/i.test(text)) return "taglish";
+      var c = 0;
+      for (var i = 0; i < words.length; i++) {
+        var w = words[i].replace(/[^\w'-]/g, "");
+        if (FILIPINO_WORDS.indexOf(w) !== -1) c++;
+      }
+      var ratio = c / words.length;
+      if (ratio > 0.6) return "filipino";
+      if (ratio > 0.15) return "taglish";
+      var hasCasual = /\b(gonna|wanna|gotta|lemme|ain'?t|y'?all|kinda|sorta|lowkey|highkey|fr|ngl|tbh|idk|lol|lmao|bro|bruh|yo)\b/i.test(text);
+      if (hasCasual) return "casual_english";
+      return "english";
+    }
+
+    function detectTone(text) {
+      var t = text;
+      if (/(!{2,}|🔥|LET'?S GO+|YES+|finally|i did it|we did it|finished|done)/i.test(t)) return "excited";
+      if (/(ha){3,}|lmao+|lol+|lmfao+|🤣|😂/i.test(t)) return "joking";
+      if (/(ugh|frustrat|annoy|hate (this|that|my)|why won'?t|so done|furious|pissed|rage)/i.test(t)) return "frustrated";
+      if (/(sad|lonely|cry|miserable|miss (him|her|them)|empty|hurt|broken|nakakaiyak)/i.test(t)) return "sad";
+      if (/(nervous|scared|worried|anxious|what if|afraid|freaking out|kinakabahan)/i.test(t)) return "nervous";
+      if (/(tired|exhaust|burn(ed|t)? out|can'?t focus|drained|worn out|zooked|pagod|nakakapagod)/i.test(t)) return "tired";
+      if (/(confus|don'?t (get|understand)|makes no sense|what do you mean|wdym|huh\?|wait what|di ko gets|di gets)/i.test(t)) return "confused";
+      if (/(😂|🤣|😭|💀)/.test(t)) return "playful";
+      if (/(serious|actually|honestly|really need|important)/i.test(t) && t.length > 25) return "serious";
+      return "casual";
+    }
+
+    function detectIntent(text) {
+      var l = text.toLowerCase().trim();
+      if (/^(hi|hey|hello|yo|sup|hiya|howdy|gm|gn|kumusta|kamusta)\b/.test(l) && l.length < 30) return "greeting";
+      if (/\b(bye|goodbye|goodnight|see you|later|gtg|ttyl|ingat)\b/.test(l) && l.length < 30) return "farewell";
+      if (/^(ok|okay|k|sure|yeah|yep|yup|bet|alr|alright|sige|oo|yay|yes)\s*[.!]?$/i.test(l)) return "agreement";
+      if (/^(no|nope|nah|naw|di|hindi|ayaw)\s*[.!]?$/i.test(l)) return "disagreement";
+      if (/(wdym|what do you mean|what you mean|huh\?|wait what|ano ba|di ko gets)/i.test(l)) return "clarification";
+      if (/\?\s*$/.test(l) || /^(what|why|how|when|where|who|which|can you|could you|would you|are you|do you)\b/i.test(l)) return "question";
+      if (/(!{2,}|finally|i did it|we did it|let'?s go+|yes+|finished|done)/i.test(text)) return "celebration";
+      if (/(i hate|so annoying|why is|i can'?t believe|my (code|website|computer) (isn'?t|is not|broken))/i.test(l)) return "venting";
+      return "casual_chat";
+    }
+
+    function analyzeStructure(text) {
+      var trimmed = text.trim();
+      var words = trimmed.split(/\s+/).filter(Boolean);
+      var wc = words.length;
+      return {
+        wordCount: wc,
+        length: wc <= 3 ? "short" : wc <= 15 ? "medium" : "long",
+        isAllCaps: trimmed.length >= 3 && ALL_CAPS_RE.test(trimmed),
+        hasRepeatedChars: REPEATED_RE.test(trimmed),
+        isQuestion: /\?\s*$/.test(trimmed)
+      };
+    }
+
+    function normalizeForHint(text) {
+      var out = text;
+      for (var key in ABBREVIATIONS) {
+        var re = new RegExp("\\b" + key.replace(/[.*+?^${}()|[\]\\]/g, "\\$&") + "\\b", "gi");
+        out = out.replace(re, ABBREVIATIONS[key]);
+      }
+      return out;
+    }
+
+    var personalSlang = {};
+    function scanPersonalSlang(text) {
+      var m = text.match(/whenever i say ['"]?([\w-]+)['"]?[, ]+i mean (?:it'?s |its )?(.+)/i);
+      if (m) {
+        var key = m[1].toLowerCase();
+        var val = m[2].trim().replace(/[.!]$/, "");
+        personalSlang[key] = val;
+        log("Personal slang registered:", key, "→", val);
+        return { key: key, value: val };
+      }
+      return null;
+    }
+    function getPersonalSlang() { return Object.assign({}, personalSlang); }
+
+    function buildContext(text) {
+      var original = String(text || "");
+      var trimmed = original.trim();
+      if (!trimmed) return null;
+      var structure = analyzeStructure(trimmed);
+      return {
+        original: original,
+        normalized: normalizeForHint(trimmed),
+        tone: detectTone(trimmed),
+        languageStyle: detectLanguageStyle(trimmed),
+        intent: detectIntent(trimmed),
+        slang: extractSlang(trimmed),
+        emojis: extractEmojis(trimmed),
+        wordCount: structure.wordCount,
+        length: structure.length,
+        isAllCaps: structure.isAllCaps,
+        hasRepeatedChars: structure.hasRepeatedChars,
+        isQuestion: structure.isQuestion
+      };
+    }
+
+    function formatLanguage(style) {
+      switch (style) {
+        case "filipino": return "Filipino";
+        case "taglish": return "Taglish (Filipino + English)";
+        case "casual_english": return "casual English";
+        default: return "English";
+      }
+    }
+    function lengthGuidance(ctx) {
+      if (ctx.length === "short") return "Keep your reply SHORT — they wrote only " + ctx.wordCount + " word(s). One or two sentences max.";
+      if (ctx.length === "medium") return "Keep your reply conversational — a few sentences.";
+      return "You can give a fuller reply if the topic warrants it.";
+    }
+
+    function formatForPrompt(ctx) {
+      if (!ctx) return "";
+      var lines = [];
+      lines.push("=== USER MESSAGE ANALYSIS ===");
+      lines.push('  Original message: ' + JSON.stringify(ctx.original));
+      if (ctx.normalized !== ctx.original) lines.push('  Likely meaning (hint): ' + JSON.stringify(ctx.normalized));
+      lines.push("  Detected tone: " + ctx.tone);
+      lines.push("  Language style: " + formatLanguage(ctx.languageStyle));
+      lines.push("  Likely intent: " + ctx.intent);
+      if (ctx.slang.length) lines.push("  Slang / abbreviations: " + ctx.slang.join(", "));
+      if (ctx.emojis.length) lines.push("  Emojis: " + ctx.emojis.join(" "));
+      lines.push("  Message length: " + ctx.length + " (" + ctx.wordCount + " words)");
+      if (ctx.isAllCaps) lines.push("  All caps: yes (emotional emphasis)");
+      if (ctx.hasRepeatedChars) lines.push("  Repeated letters: yes (emphasis)");
+      lines.push("");
+      lines.push("  Guidance:");
+      lines.push("    - Match the user's tone and language style.");
+      lines.push("    - " + lengthGuidance(ctx));
+      lines.push("    - Do NOT explain the slang unless asked.");
+      lines.push("    - Use slang lightly. Never sound like a slang bot.");
+      lines.push("    - Stay in your own voice: " + IDENTITY.name + ".");
+
+      var ps = getPersonalSlang();
+      var keys = Object.keys(ps);
+      if (keys.length) {
+        lines.push("    - Personal slang this session:");
+        for (var i = 0; i < keys.length; i++) lines.push("        " + keys[i] + " = " + ps[keys[i]]);
+      }
+      return lines.join("\n");
+    }
+
+    return {
+      buildContext: buildContext,
+      detectTone: detectTone,
+      detectLanguageStyle: detectLanguageStyle,
+      detectIntent: detectIntent,
+      extractSlang: extractSlang,
+      extractEmojis: extractEmojis,
+      scanPersonalSlang: scanPersonalSlang,
+      getPersonalSlang: getPersonalSlang,
+      formatForPrompt: formatForPrompt,
+      ABBREVIATIONS: ABBREVIATIONS,
+      EMOJI_HINTS: EMOJI_HINTS
+    };
+  })();
+
+
+  /* ============================================================
+     9. USER SYSTEM — ADAPTIVE UNDERSTANDING  (NEW)
+     ============================================================
+     Learns how the user communicates, gradually, with confidence.
+     Never assumes from a single message. Explicit beats inferred.
+     Current request always beats stored preference.
+     ============================================================ */
+
+  var UserSystem = (function () {
+
+    var STORAGE_KEY = "zimelia_user_profile_v1";
+    var OBSERVATION_LOG_LIMIT = 40;
+
+    // Confidence thresholds (documented for readability)
+    var CONFIDENCE = {
+      WEAK:     0.30,
+      POSSIBLE: 0.60,
+      LIKELY:   0.80,
+      STRONG:   0.95,
+      EXPLICIT: 1.00
+    };
+
+    // Fresh empty profile
+    function emptyProfile() {
+      return {
+        version: 1,
+        createdAt: Date.now(),
+        updatedAt: Date.now(),
+        communicationStyle: {},   // { trait: {value, confidence, source, ts, evidence} }
+        preferences: {},          // { key:   {value, confidence, source, ts, evidence} }
+        interests: {},            // { name:  {confidence, source, ts, mentions} }
+        skills: {},               // { topic: {level, confidence, source, ts} }
+        projects: {},             // { name:  {description, technologies, status, lastMentioned, confidence, mentions} }
+        terminology: {},          // { term:  {meaning, source, ts} }
+        interactionPreferences: {},// { key:   {value, confidence, source, ts} }
+        observations: [],         // recent observation log
+        metrics: {
+          communicationUnderstanding: 0,
+          preferenceUnderstanding: 0,
+          projectUnderstanding: 0
+        }
+      };
+    }
+
+    var profile = load();
+
+    /* ---------- Persistence ---------- */
+    function load() {
+      try {
+        var raw = localStorage.getItem(STORAGE_KEY);
+        if (!raw) return emptyProfile();
+        var parsed = JSON.parse(raw);
+        if (!parsed || typeof parsed !== "object") return emptyProfile();
+        // Merge with fresh template so new fields exist
+        var base = emptyProfile();
+        for (var k in base) if (parsed[k] === undefined) parsed[k] = base[k];
+        return parsed;
+      } catch (e) {
+        warn("User profile load failed — starting fresh:", e && e.message);
+        return emptyProfile();
+      }
+    }
+    function save() {
+      profile.updatedAt = Date.now();
+      try { localStorage.setItem(STORAGE_KEY, JSON.stringify(profile)); }
+      catch (e) { warn("User profile save failed:", e && e.message); }
+    }
+    function clearMemory() {
+      profile = emptyProfile();
+      try { localStorage.removeItem(STORAGE_KEY); } catch (e) {}
+      log("User profile cleared.");
+    }
+
+    /* ---------- Privacy guard ---------- */
+    // Very cheap filter: don't record anything that looks like a secret.
+    var SENSITIVE_PATTERNS = [
+      /\bsk-[a-z0-9]{10,}/i,           // OpenAI-style keys
+      /\bghp_[a-z0-9]{20,}/i,           // GitHub tokens
+      /\b[A-Z0-9]{20,}\b/,              // long uppercase tokens
+      /\bpassword\b/i, /\bpasswd\b/i,
+      /\bapi[_-]?key\b/i, /\bsecret\b/i,
+      /\bcredit[ _-]?card\b/i, /\bcvv\b/i,
+      /\bssn\b/i, /\bsocial security\b/i
+    ];
+    function looksSensitive(text) {
+      for (var i = 0; i < SENSITIVE_PATTERNS.length; i++) {
+        if (SENSITIVE_PATTERNS[i].test(text)) return true;
+      }
+      return false;
+    }
+
+    /* ---------- Observation recording ---------- */
+    function recordObservation(obs) {
+      // obs = { category, key, value, source, confidence, evidence }
+      if (!obs || !obs.category || !obs.key) return;
+      if (obs.value == null || obs.value === "") return;
+
+      obs.source = obs.source || "inferred";
+      var now = Date.now();
+
+      // Privacy gate
+      if (looksSensitive(String(obs.value))) {
+        log("Observation skipped (looks sensitive).");
+        return;
+      }
+
+      var bucket = categoryBucket(obs.category);
+      if (!bucket) return;
+
+      var existing = bucket[obs.key];
+
+      if (!existing) {
+        // New observation
+        bucket[obs.key] = {
+          value: obs.value,
+          confidence: obs.source === "explicit" ? CONFIDENCE.EXPLICIT : (obs.confidence || 0.35),
+          source: obs.source,
+          ts: now,
+          evidence: 1,
+          note: obs.note || null
+        };
+        logObservation("NEW", obs);
+      } else {
+        if (obs.source === "explicit") {
+          // Explicit wins instantly — overrides inferred.
+          var old = existing.value;
+          existing.value = obs.value;
+          existing.confidence = CONFIDENCE.EXPLICIT;
+          existing.source = "explicit";
+          existing.ts = now;
+          existing.evidence = (existing.evidence || 1) + 1;
+          logObservation("EXPLICIT OVERRIDE", obs, old);
+        } else if (existing.value === obs.value) {
+          // Reinforce existing
+          existing.confidence = Math.min(CONFIDENCE.STRONG, existing.confidence + 0.15);
+          existing.evidence = (existing.evidence || 1) + 1;
+          existing.ts = now;
+          logObservation("REINFORCED", obs, null, existing.confidence);
+        } else {
+          // Conflict — new value. Reduce confidence of old. If old was explicit,
+          // require TWO new observations before it's replaced. Otherwise,
+          // replace if new confidence is close.
+          if (existing.source === "explicit") {
+            // Explicit only yields to another explicit statement.
+            // (User contradicted themselves — keep the newer explicit.
+            //  For now we just log and leave; a second explicit will override.)
+            logObservation("CONFLICT vs explicit — holding", obs, existing.value);
+            return;
+          }
+          existing.confidence -= 0.25;
+          if (existing.confidence <= CONFIDENCE.WEAK) {
+            // Replace with the new value
+            var oldVal = existing.value;
+            existing.value = obs.value;
+            existing.confidence = obs.confidence || 0.4;
+            existing.source = obs.source;
+            existing.ts = now;
+            existing.evidence = 1;
+            logObservation("REPLACED", obs, oldVal);
+          } else {
+            logObservation("CONFLICT — old still stronger", obs, existing.value);
+          }
+        }
+      }
+
+      pushObservationLog(obs);
+      updateMetrics();
+      save();
+    }
+
+    function categoryBucket(cat) {
+      switch (cat) {
+        case "communicationStyle":   return profile.communicationStyle;
+        case "preference":           return profile.preferences;
+        case "terminology":          return profile.terminology;
+        case "interactionPreference":return profile.interactionPreferences;
+        case "interest":             return profile.interests;
+        case "skill":                return profile.skills;
+        case "project":              return profile.projects;
+        default: return null;
+      }
+    }
+
+    function pushObservationLog(obs) {
+      profile.observations.unshift({
+        category: obs.category,
+        key: obs.key,
+        value: obs.value,
+        source: obs.source,
+        ts: Date.now()
+      });
+      while (profile.observations.length > OBSERVATION_LOG_LIMIT) profile.observations.pop();
+    }
+
+    function logObservation(kind, obs, oldValue, newConfidence) {
+      var tail = "";
+      if (oldValue != null) tail = " (was: " + JSON.stringify(oldValue) + ")";
+      if (newConfidence != null) tail += " (confidence → " + newConfidence.toFixed(2) + ")";
+      log("[USER] " + kind + " " + obs.category + "." + obs.key + " = " + JSON.stringify(obs.value) + tail);
+    }
+
+    function updateMetrics() {
+      function avgConfidence(bucket) {
+        var keys = Object.keys(bucket);
+        if (!keys.length) return 0;
+        var total = 0;
+        for (var i = 0; i < keys.length; i++) total += (bucket[keys[i]].confidence || 0);
+        return total / keys.length;
+      }
+      profile.metrics.communicationUnderstanding = round2(avgConfidence(profile.communicationStyle) * 0.9 + avgConfidence(profile.interactionPreferences) * 0.1);
+      profile.metrics.preferenceUnderstanding    = round2(avgConfidence(profile.preferences));
+      profile.metrics.projectUnderstanding       = round2(avgConfidence(profile.projects));
+    }
+    function round2(n) { return Math.round(n * 100) / 100; }
+
+    /* ---------- Learning rules ---------- */
+    // Explicit-preference patterns — the user is directly telling us.
+    var EXPLICIT_RULES = [
+      { re: /\b(?:i (?:prefer|like|want) (?:short|shorter|brief|concise) (?:answers?|replies|responses?|explanations?))\b/i,
+        key: "response_length", value: "short", note: "explicit: prefers short responses" },
+      { re: /\b(?:please (?:don'?t|do not) make (?:the )?(?:answers?|replies|responses?|explanations?) (?:so |too )?long)\b/i,
+        key: "response_length", value: "short", note: "explicit: don't make replies long" },
+      { re: /\b(?:keep (?:them|it|answers?|replies) (?:short|brief|concise))\b/i,
+        key: "response_length", value: "short" },
+      { re: /\b(?:i (?:prefer|like|want) (?:detailed|longer|in.depth) (?:answers?|replies|responses?|explanations?))\b/i,
+        key: "response_length", value: "detailed" },
+      { re: /\b(?:explain (?:it|that|this) (?:more|further|in detail))\b/i,
+        key: "response_length", value: "detailed" },
+      { re: /\b(?:i (?:actually |really )?like (?:it |when you )?jok(?:e|ing)|i like (?:your )?humor)\b/i,
+        key: "humor_preference", value: "playful", note: "explicit: likes humor" },
+      { re: /\b(?:serious mode|be serious|can you (?:please )?be serious|no jokes)\b/i,
+        key: "humor_preference", value: "none", note: "explicit: serious mode" },
+      { re: /\b(?:i (?:prefer|like) (?:simpler|simple|easier) explanations?)\b/i,
+        key: "explanation_complexity", value: "simple" },
+      { re: /\b(?:i (?:prefer|like) (?:technical|detailed|advanced) explanations?)\b/i,
+        key: "explanation_complexity", value: "technical" },
+      { re: /\b(?:i (?:prefer|like) (?:examples?))\b/i,
+        key: "likes_examples", value: "yes" },
+      { re: /\b(?:i (?:prefer|like) (?:step.by.step|steps))\b/i,
+        key: "likes_steps", value: "yes" },
+      { re: /\b(?:just give me the (?:code|answer))\b/i,
+        key: "likes_direct_answers", value: "yes" }
+    ];
+
+    var CORRECTION_RULES = [
+      { re: /\b(?:actually,? (?:i )?don'?t|that'?s not right|not exactly|you'?re wrong)\b/i,
+        key: "_generic_correction", value: "true" },
+      { re: /\b(?:that'?s too (?:long|complicated|much)|make (?:it|them) (?:shorter|simpler))\b/i,
+        key: "response_length", value: "short", note: "corrected: replies too long" },
+      { re: /\b(?:that'?s (?:not what i (?:meant|said)|wrong))\b/i,
+        key: "_generic_correction", value: "true" },
+      { re: /\b(?:you'?re misunderstanding me|you don'?t get it)\b/i,
+        key: "_generic_correction", value: "true" }
+    ];
+
+    // Correction target phrases — "actually I prefer short"
+    var CORRECTION_PREF = [
+      { re: /actually[, ]+i (?:prefer|like|want) (short|shorter|brief)\b/i,
+        key: "response_length", value: "short" },
+      { re: /actually[, ]+i (?:prefer|like|want) (long|longer|detailed)\b/i,
+        key: "response_length", value: "detailed" },
+      { re: /actually[, ]+i (?:don'?t|do not) like (?:jokes|humor)\b/i,
+        key: "humor_preference", value: "none" }
+    ];
+
+    // Learning signals
+    var LEARNING_SIGNALS = {
+      positive: /\b(?:that'?s (?:exactly )?(?:what i wanted|perfect|great|amazing)|that makes sense|thanks|thank you|nice|cool|👌|👍|🔥)\b/i,
+      negative: /\b(?:that'?s (?:too (?:long|complicated|much)|wrong|not helpful)|make it (?:shorter|simpler)|no,? that'?s not)\b/i
+    };
+
+    // Topic detection for interests/projects/skills
+    var TOPIC_KEYWORDS = [
+      "javascript","python","html","css","react","vue","node","npm",
+      "roblox","minecraft","fortnite","valorant","genshin","gaming",
+      "music","art","drawing","painting","writing","poetry",
+      "web development","frontend","backend","full-stack","api","database",
+      "school","homework","university","college",
+      "robotics","arduino","raspberry pi","ai","machine learning",
+      "design","ui","ux"
+    ];
+
+    /* ---------- Main learning entry ---------- */
+    function learnFromMessage(text, conversationCtx) {
+      if (!text || !text.trim()) return;
+      var t = text.trim();
+      if (looksSensitive(t)) { log("Learning skipped — message looks sensitive."); return; }
+
+      // 1. Explicit preferences (highest priority)
+      scanExplicitPreferences(t);
+
+      // 2. Corrections (override inferred)
+      scanCorrections(t);
+
+      // 3. Terminology — "when I say X I mean Y"
+      scanTerminology(t);
+
+      // 4. Projects — "I'm working on X" / "called X" / "building X"
+      scanProjects(t);
+
+      // 5. Interests — repeated mentions
+      scanInterests(t);
+
+      // 6. Skills — explicit level or repeated topic work
+      scanSkills(t);
+
+      // 7. Communication style — inferred over time
+      if (conversationCtx) scanCommunicationStyle(t, conversationCtx);
+
+      // 8. Interaction preferences — inferred from feedback
+      scanFeedback(t);
+
+      updateMetrics();
+      save();
+    }
+
+    function scanExplicitPreferences(text) {
+      for (var i = 0; i < EXPLICIT_RULES.length; i++) {
+        var rule = EXPLICIT_RULES[i];
+        if (rule.re.test(text)) {
+          recordObservation({
+            category: "preference",
+            key: rule.key,
+            value: rule.value,
+            source: "explicit",
+            confidence: CONFIDENCE.EXPLICIT,
+            note: rule.note || null
+          });
+        }
+      }
+    }
+
+    function scanCorrections(text) {
+      // Direct preference correction
+      for (var i = 0; i < CORRECTION_PREF.length; i++) {
+        var r = CORRECTION_PREF[i];
+        var m = text.match(r.re);
+        if (m) {
+          recordObservation({
+            category: "preference",
+            key: r.key,
+            value: r.value,
+            source: "explicit",
+            confidence: CONFIDENCE.EXPLICIT,
+            note: "user corrected"
+          });
+          return;
+        }
+      }
+      // Generic correction
+      for (var j = 0; j < CORRECTION_RULES.length; j++) {
+        var cr = CORRECTION_RULES[j];
+        if (cr.re.test(text)) {
+          if (cr.key === "_generic_correction") {
+            log("[USER] Generic correction detected — lowering last reply's style confidence.");
+            // Slightly reduce confidence on whichever preference was most recently reinforced.
+            softenRecentPreferences();
+          } else {
+            recordObservation({
+              category: "preference",
+              key: cr.key,
+              value: cr.value,
+              source: "explicit",
+              confidence: CONFIDENCE.EXPLICIT,
+              note: cr.note || null
+            });
+          }
+        }
+      }
+    }
+
+    function softenRecentPreferences() {
+      // Reduce confidence of the two most recently updated preferences by 0.15.
+      var items = [];
+      for (var k in profile.preferences) items.push({ key: k, ts: profile.preferences[k].ts });
+      items.sort(function (a, b) { return b.ts - a.ts; });
+      for (var i = 0; i < Math.min(2, items.length); i++) {
+        var p = profile.preferences[items[i].key];
+        if (p.source === "explicit") continue;
+        p.confidence = Math.max(0, p.confidence - 0.15);
+      }
+    }
+
+    function scanTerminology(text) {
+      // "when I say X I mean Y"
+      var m1 = text.match(/when i say ['"]?([\w-]+)['"]?[, ]+i mean (?:it'?s |its )?(.+)/i);
+      if (m1) {
+        recordObservation({
+          category: "terminology",
+          key: m1[1].toLowerCase(),
+          value: m1[2].trim().replace(/[.!]$/, ""),
+          source: "explicit"
+        });
+        return;
+      }
+      // "I use X to mean Y"
+      var m2 = text.match(/i use ['"]?([\w-]+)['"]? to mean (.+)/i);
+      if (m2) {
+        recordObservation({
+          category: "terminology",
+          key: m2[1].toLowerCase(),
+          value: m2[2].trim().replace(/[.!]$/, ""),
+          source: "explicit"
+        });
+      }
+      // "I call this X"
+      var m3 = text.match(/i call (?:this|it) ['"]?([\w-]+)['"]?/i);
+      if (m3) {
+        recordObservation({
+          category: "terminology",
+          key: m3[1].toLowerCase(),
+          value: "user-defined term",
+          source: "explicit"
+        });
+      }
+    }
+
+    function scanProjects(text) {
+      // "I'm working on X" / "my project X" / "I'm building X" / "called X"
+      var patterns = [
+        /i'?m (?:working on|building|making|creating) (?:a |an |the )?(?:website|app|game|project|tool)?\s*(?:called |named )?['"]?([A-Za-z][\w \-]{1,40})['"]?/i,
+        /my (?:project|site|app|website|game) (?:called |named )?['"]?([A-Za-z][\w \-]{1,40})['"]?/i,
+        /(?:called|named) ['"]?([A-Z][\w \-]{1,40})['"]?/
+      ];
+      for (var i = 0; i < patterns.length; i++) {
+        var m = text.match(patterns[i]);
+        if (m && m[1]) {
+          var name = m[1].trim();
+          // Ignore obvious non-project words
+          if (/^(it|this|that|them|us|you|me|something|anything)$/i.test(name)) continue;
+
+          var existing = profile.projects[name];
+          if (!existing) {
+            profile.projects[name] = {
+              name: name,
+              description: null,
+              technologies: [],
+              status: "active",
+              lastMentioned: Date.now(),
+              confidence: 0.55,
+              mentions: 1
+            };
+            log("[USER] Project tracked:", name);
+            save();
+          } else {
+            existing.mentions++;
+            existing.lastMentioned = Date.now();
+            existing.confidence = Math.min(0.95, existing.confidence + 0.15);
+            save();
+          }
+          // Also detect technologies mentioned nearby
+          for (var j = 0; j < TOPIC_KEYWORDS.length; j++) {
+            var tech = TOPIC_KEYWORDS[j];
+            if (new RegExp("\\b" + tech.replace(/[.*+?^${}()|[\]\\]/g, "\\$&") + "\\b", "i").test(text)) {
+              if (profile.projects[name].technologies.indexOf(tech) === -1) {
+                profile.projects[name].technologies.push(tech);
+              }
+            }
+          }
+        }
+      }
+    }
+
+    function scanInterests(text) {
+      for (var i = 0; i < TOPIC_KEYWORDS.length; i++) {
+        var topic = TOPIC_KEYWORDS[i];
+        var re = new RegExp("\\b" + topic.replace(/[.*+?^${}()|[\]\\]/g, "\\$&") + "\\b", "i");
+        if (re.test(text)) {
+          var cur = profile.interests[topic];
+          if (!cur) {
+            profile.interests[topic] = {
+              confidence: 0.25,
+              source: "inferred",
+              ts: Date.now(),
+              mentions: 1
+            };
+          } else {
+            cur.mentions = (cur.mentions || 1) + 1;
+            cur.ts = Date.now();
+            // Increase confidence with repeated mentions
+            cur.confidence = Math.min(0.95, cur.confidence + 0.10);
+            if (cur.confidence >= 0.60) cur.source = "strong";
+            if (cur.confidence >= 0.80) log("[USER] Strong interest detected:", topic);
+          }
+        }
+      }
+      save();
+    }
+
+    function scanSkills(text) {
+      // Explicit level statements
+      var rules = [
+        { re: /i'?m (?:still )?learning ([\w\-\.]+)/i, level: "beginner", conf: 0.85 },
+        { re: /i'?m new to ([\w\-\.]+)/i,              level: "beginner", conf: 0.9 },
+        { re: /i don'?t know ([\w\-\.]+) (?:well|yet)/i, level: "beginner", conf: 0.7 },
+        { re: /i know ([\w\-\.]+) (?:pretty )?well/i,  level: "intermediate", conf: 0.7 },
+        { re: /i'?ve been (?:using|doing|working with) ([\w\-\.]+) for (?:a while|years)/i, level: "advanced", conf: 0.8 },
+        { re: /i built .* in ([\w\-\.]+)/i,             level: "intermediate", conf: 0.6 }
+      ];
+      for (var i = 0; i < rules.length; i++) {
+        var m = text.match(rules[i].re);
+        if (m && m[1]) {
+          var topic = m[1].toLowerCase();
+          if (TOPIC_KEYWORDS.indexOf(topic) !== -1) {
+            recordObservation({
+              category: "skill",
+              key: topic,
+              value: rules[i].level,
+              source: "explicit",
+              confidence: rules[i].conf
+            });
+          }
+        }
+      }
+    }
+
+    function scanCommunicationStyle(text, ctx) {
+      // Only infer these gradually. Each evidence +0.08, cap 0.9.
+      function reinforce(cat, key, value) {
+        var bucket = categoryBucket(cat);
+        var cur = bucket[key];
+        if (!cur || cur.value !== value) {
+          // New value — start fresh with low confidence
+          bucket[key] = { value: value, confidence: 0.30, source: "inferred", ts: Date.now(), evidence: 1 };
+          log("[USER] Style observation: " + key + " = " + value + " (0.30)");
+        } else {
+          cur.confidence = Math.min(0.90, cur.confidence + 0.08);
+          cur.evidence = (cur.evidence || 1) + 1;
+          cur.ts = Date.now();
+        }
+      }
+
+      // Language style
+      reinforce("communicationStyle", "language", ctx.languageStyle);
+
+      // Message length
+      reinforce("communicationStyle", "messageLength", ctx.length);
+
+      // Slang usage
+      if (ctx.slang.length > 0) reinforce("communicationStyle", "usesSlang", "yes");
+
+      // Emoji usage
+      if (ctx.emojis.length > 0) reinforce("communicationStyle", "usesEmojis", "yes");
+
+      // Formality
+      var isCasual = ctx.languageStyle === "casual_english" || ctx.languageStyle === "taglish" ||
+                     /\b(?:bro|dude|bruh|yo|nah|bet|lol)\b/i.test(text);
+      if (isCasual) reinforce("communicationStyle", "formality", "casual");
+      else if (/\b(?:please|kindly|could you|would you|thank you)\b/i.test(text) && text.length > 40) {
+        reinforce("communicationStyle", "formality", "polite");
+      }
+
+      // Humor style — inferred from tone
+      if (ctx.tone === "joking" || ctx.tone === "playful") {
+        reinforce("communicationStyle", "humorStyle", "playful");
+      }
+
+      save();
+    }
+
+    function scanFeedback(text) {
+      // Detect positive / negative reaction
+      if (LEARNING_SIGNALS.positive.test(text)) {
+        // Reinforce whatever style preference was last updated
+        reinforceRecentPreference(0.10);
+      }
+      if (LEARNING_SIGNALS.negative.test(text)) {
+        reinforceRecentPreference(-0.15);
+      }
+    }
+
+    function reinforceRecentPreference(delta) {
+      var items = [];
+      for (var k in profile.preferences) items.push({ key: k, ts: profile.preferences[k].ts });
+      items.sort(function (a, b) { return b.ts - a.ts; });
+      if (!items.length) return;
+      var top = profile.preferences[items[0].key];
+      if (top.source === "explicit") return;
+      top.confidence = Math.max(0, Math.min(0.95, top.confidence + delta));
+    }
+
+    /* ---------- Read accessors ---------- */
+    function getProfile()      { return JSON.parse(JSON.stringify(profile)); }
+    function getPreferences()  { return JSON.parse(JSON.stringify(profile.preferences)); }
+    function getInterests()    { return JSON.parse(JSON.stringify(profile.interests)); }
+    function getProjects()     { return JSON.parse(JSON.stringify(profile.projects)); }
+    function getSkills()       { return JSON.parse(JSON.stringify(profile.skills)); }
+    function getTerminology()  { return JSON.parse(JSON.stringify(profile.terminology)); }
+    function getObservations() { return profile.observations.slice(); }
+    function getMetrics()      { return Object.assign({}, profile.metrics); }
+
+    /* ---------- Explicit remember / forget ---------- */
+    function remember(key, value) {
+      // Map friendly keys to preference entries
+      recordObservation({
+        category: "preference",
+        key: key,
+        value: value,
+        source: "explicit",
+        confidence: CONFIDENCE.EXPLICIT
+      });
+    }
+
+    function forget(key) {
+      var buckets = ["communicationStyle","preferences","interests","skills","projects","terminology","interactionPreferences"];
+      var removed = [];
+      for (var i = 0; i < buckets.length; i++) {
+        if (profile[buckets[i]][key]) {
+          delete profile[buckets[i]][key];
+          removed.push(buckets[i] + "." + key);
+        }
+      }
+      if (removed.length) { save(); log("Forgot:", removed.join(", ")); }
+      return removed;
+    }
+
+    function forgetAll() { clearMemory(); }
+
+    /* ---------- Apply preferences to a response context ---------- */
+    // Priority: current request > conversation context > explicit > inferred.
+    function applyUserPreferences(conversationCtx, settings) {
+      var result = {
+        responseLength: (settings && settings.responseLength) || "auto",
+        humorLevel:     (settings && settings.humorLevel)     || "normal",
+        explanationDepth: "normal",
+        likesExamples:  null,
+        likesSteps:     null,
+        notes: []
+      };
+
+      // Explicit profile entries override "auto" settings
+      var prefs = profile.preferences;
+
+      // Response length
+      if (prefs.response_length && prefs.response_length.confidence >= CONFIDENCE.POSSIBLE) {
+        if (result.responseLength === "auto") {
+          result.responseLength = prefs.response_length.value;
+          result.notes.push("response_length=" + prefs.response_length.value + " (profile, " + prefs.response_length.source + ")");
+        }
+      }
+
+      // Humor
+      if (prefs.humor_preference && prefs.humor_preference.confidence >= CONFIDENCE.POSSIBLE) {
+        if (prefs.humor_preference.value === "none") {
+          result.humorLevel = "none";
+          result.notes.push("humor=none (profile)");
+        } else if (result.humorLevel === "normal") {
+          result.humorLevel = prefs.humor_preference.value;
+          result.notes.push("humor=" + prefs.humor_preference.value + " (profile)");
+        }
+      }
+
+      // Explanation complexity
+      if (prefs.explanation_complexity && prefs.explanation_complexity.confidence >= CONFIDENCE.POSSIBLE) {
+        result.explanationDepth = prefs.explanation_complexity.value;
+        result.notes.push("explanation=" + prefs.explanation_complexity.value + " (profile)");
+      }
+
+      if (prefs.likes_examples) result.likesExamples = prefs.likes_examples.value;
+      if (prefs.likes_steps)    result.likesSteps = prefs.likes_steps.value;
+
+      // CURRENT MESSAGE OVERRIDE
+      if (conversationCtx) {
+        // If the user asks for more detail today, honour that even if profile says short.
+        if (/\b(?:in detail|explain more|elaborate|detailed)\b/i.test(conversationCtx.original)) {
+          result.responseLength = "detailed";
+          result.notes.push("override: user asked for detail");
+        }
+        if (/\b(?:shorter|brief|just tell me|just the answer|tldr)\b/i.test(conversationCtx.original)) {
+          result.responseLength = "short";
+          result.notes.push("override: user asked for short");
+        }
+        if (/\b(?:serious|no jokes|be serious)\b/i.test(conversationCtx.original)) {
+          result.humorLevel = "none";
+          result.notes.push("override: serious mode");
+        }
+        // If the message itself is very short, bias toward short replies
+        if (conversationCtx.length === "short" && result.responseLength === "auto") {
+          result.responseLength = "short";
+          result.notes.push("override: message very short");
+        }
+      }
+
+      return result;
+    }
+
+    /* ---------- Build prompt context block ---------- */
+    function buildPromptContext() {
+      var lines = ["=== USER UNDERSTANDING (learned quietly, do not announce) ==="];
+
+      function addIf(cond, line) { if (cond) lines.push("  - " + line); }
+
+      var prefs = profile.preferences;
+      var style = profile.communicationStyle;
+
+      addIf(style.language && style.language.confidence >= CONFIDENCE.POSSIBLE,
+        "language: " + style.language.value + " (" + style.language.confidence.toFixed(2) + ")");
+      addIf(style.formality && style.formality.confidence >= CONFIDENCE.POSSIBLE,
+        "formality: " + style.formality.value + " (" + style.formality.confidence.toFixed(2) + ")");
+      addIf(style.messageLength && style.messageLength.confidence >= CONFIDENCE.LIKELY,
+        "typical message length: " + style.messageLength.value);
+      addIf(style.usesSlang && style.usesSlang.confidence >= CONFIDENCE.POSSIBLE,
+        "uses slang: yes");
+      addIf(style.usesEmojis && style.usesEmojis.confidence >= CONFIDENCE.POSSIBLE,
+        "uses emojis: yes");
+      addIf(style.humorStyle && style.humorStyle.confidence >= CONFIDENCE.POSSIBLE,
+        "humor style: " + style.humorStyle.value);
+
+      addIf(prefs.response_length && prefs.response_length.confidence >= CONFIDENCE.POSSIBLE,
+        "prefers responses: " + prefs.response_length.value + " (" + prefs.response_length.source + ")");
+      addIf(prefs.humor_preference && prefs.humor_preference.confidence >= CONFIDENCE.POSSIBLE,
+        "humor preference: " + prefs.humor_preference.value);
+      addIf(prefs.explanation_complexity && prefs.explanation_complexity.confidence >= CONFIDENCE.POSSIBLE,
+        "explanation complexity: " + prefs.explanation_complexity.value);
+      addIf(prefs.likes_examples && prefs.likes_examples.confidence >= CONFIDENCE.POSSIBLE,
+        "likes examples: yes");
+      addIf(prefs.likes_steps && prefs.likes_steps.confidence >= CONFIDENCE.POSSIBLE,
+        "likes step-by-step: yes");
+
+      var interestKeys = Object.keys(profile.interests);
+      var strongInterests = interestKeys.filter(function (k) { return profile.interests[k].confidence >= CONFIDENCE.POSSIBLE; });
+      if (strongInterests.length) lines.push("  - interests (recurring): " + strongInterests.join(", "));
+
+      var projectKeys = Object.keys(profile.projects);
+      if (projectKeys.length) {
+        var recent = projectKeys.sort(function (a, b) {
+          return (profile.projects[b].lastMentioned || 0) - (profile.projects[a].lastMentioned || 0);
+        }).slice(0, 3);
+        lines.push("  - active projects: " + recent.join(", "));
+      }
+
+      var skillKeys = Object.keys(profile.skills);
+      if (skillKeys.length) {
+        var skillLines = skillKeys.map(function (k) {
+          return k + " (" + profile.skills[k].value + ")";
+        });
+        lines.push("  - known skill levels: " + skillLines.join(", "));
+      }
+
+      var termKeys = Object.keys(profile.terminology);
+      if (termKeys.length) {
+        for (var i = 0; i < termKeys.length; i++) {
+          lines.push("  - terminology: \"" + termKeys[i] + "\" = " + profile.terminology[termKeys[i]].value);
+        }
+      }
+
+      lines.push("");
+      lines.push("  Rules for using this:");
+      lines.push("    - Adapt naturally. Do NOT announce it.");
+      lines.push("    - Current user message overrides stored preferences.");
+      lines.push("    - Never invent user facts. If it's not here, don't assume it.");
+
+      return lines.join("\n");
+    }
+
+    /* ---------- Public API ---------- */
+    return {
+      learnFromMessage: learnFromMessage,
+      recordObservation: recordObservation,
+      applyUserPreferences: applyUserPreferences,
+      buildPromptContext: buildPromptContext,
+
+      getProfile: getProfile,
+      getPreferences: getPreferences,
+      getInterests: getInterests,
+      getProjects: getProjects,
+      getSkills: getSkills,
+      getTerminology: getTerminology,
+      getObservations: getObservations,
+      getMetrics: getMetrics,
+
+      remember: remember,
+      forget: forget,
+      clearMemory: clearMemory,
+
+      CONFIDENCE: CONFIDENCE
+    };
+  })();
+
+
+  /* -------- 10. MEMORY MANAGER (session) -------- */
+  var MemoryManager = (function () {
+    var memories = [];
+    function add(key, value) {
+      if (!key || value == null) return;
+      for (var i = 0; i < memories.length; i++) {
+        if (memories[i].key === key) {
+          memories[i].value = value; memories[i].ts = Date.now(); return memories[i];
+        }
+      }
+      var entry = { key: key, value: value, ts: Date.now() };
+      memories.push(entry);
+      log("Session memory added:", key, "=", value);
+      return entry;
+    }
+    function get(key) {
+      for (var i = 0; i < memories.length; i++) if (memories[i].key === key) return memories[i];
+      return null;
+    }
+    function remove(key) { memories = memories.filter(function (m) { return m.key !== key; }); }
+    function clear() { memories = []; }
+    function all() { return memories.slice(); }
+    return { add: add, get: get, remove: remove, clear: clear, all: all };
+  })();
+
+
+  /* -------- 11. CONVERSATION MANAGER -------- */
+  var ConversationManager = (function () {
+    var history = [];
+    var MAX_TURNS = 20;
+    function add(role, content) {
+      if (role !== "user" && role !== "assistant" && role !== "system") return;
+      if (typeof content !== "string" || !content.trim()) return;
+      history.push({ role: role, content: content, ts: Date.now() });
+      while (history.length > MAX_TURNS) history.shift();
+    }
+    function get() { return history.slice(); }
+    function length() { return history.length; }
+    function reset() { history = []; }
+    return { add: add, get: get, length: length, reset: reset };
+  })();
+
+
+  /* -------- 12. STATE MANAGER -------- */
+  var StateManager = (function () {
+    var state = PROFILE.defaults.state;
+    function set(s) {
+      if (!isValidState(s)) { warn("Invalid state:", s); return state; }
+      if (state === s) return state;
+      var prev = state; state = s;
+      log("State:", prev, "→", s);
+      dispatch("zimelia:stateChange", { previous: prev, state: state });
+      return state;
+    }
+    function get() { return state; }
+    function is(s) { return state === s; }
+    function isBusy() { return state === "thinking" || state === "responding"; }
+    function isThinking() { return state === "thinking"; }
+    function isOnline() { return state !== "offline"; }
+    return { set: set, get: get, is: is, isBusy: isBusy, isThinking: isThinking, isOnline: isOnline };
+  })();
+
+
+  /* -------- 13. MOOD MANAGER -------- */
+  var MoodManager = (function () {
+    var mood = PROFILE.defaults.mood;
+    function set(m) {
+      if (!isValidMood(m)) { warn("Invalid mood:", m); m = "idle"; }
+      if (mood === m) return mood;
+      var prev = mood; mood = m;
+      log("Mood:", prev, "→", m);
+      dispatch("zimelia:moodChange", { previous: prev, mood: mood, def: MOOD_INDEX[mood] });
+      return mood;
+    }
+    function get() { return mood; }
+    function reset() { return set(PROFILE.defaults.mood); }
+    return { set: set, get: get, reset: reset };
+  })();
+
+
+  /* -------- 14. RESPONSE PROCESSOR -------- */
+  var FALLBACKS = {
+    offline: { message: "Uh... my connection just tripped over its own shoelaces 😂 Give me another try in a moment.", mood: "confused" },
+    timeout: { message: "I started thinking and then lost the thread. Give me another moment?", mood: "confused" },
+    rateLimit: { message: "I'm being asked to slow down for a sec. Try me again shortly.", mood: "idle" },
+    malformed: { message: "Hmm, that came out scrambled. Ask me again?", mood: "confused" },
+    notConfigured: { message: "My AI connection isn't set up yet — I'm on the local brain right now.", mood: "confused" }
+  };
+
+  function processZimeliaResponse(raw) {
+    if (raw == null) return { message: FALLBACKS.malformed.message, mood: FALLBACKS.malformed.mood, state: "responding" };
+    if (typeof raw === "object" && raw.message) {
+      return {
+        message: String(raw.message),
+        mood: isValidMood(raw.mood) ? raw.mood : "idle",
+        state: isValidState(raw.state) ? raw.state : "responding"
+      };
+    }
+    var str = String(raw).trim();
+    str = str.replace(/^```(?:json)?\s*/i, "").replace(/\s*```$/, "").trim();
+    if (str.charAt(0) === "{" && str.charAt(str.length - 1) === "}") {
+      try {
+        var parsed = JSON.parse(str);
+        var msg = String(parsed.message || parsed.text || "").trim();
+        if (!msg) return { message: FALLBACKS.malformed.message, mood: FALLBACKS.malformed.mood, state: "responding" };
+        return { message: msg, mood: isValidMood(parsed.mood) ? parsed.mood : "idle", state: "responding" };
+      } catch (e) { return { message: str, mood: "idle", state: "responding" }; }
+    }
+    if (!str) return { message: FALLBACKS.malformed.message, mood: FALLBACKS.malformed.mood, state: "responding" };
+    return { message: str, mood: "idle", state: "responding" };
+  }
+
+
+  /* -------- 15. LOCAL FALLBACK BRAIN -------- */
+  var LOCAL_BRAIN = (function () {
+    var REPLIES = {
+      greeting:   ["Hey. What's up?", "Hey there. How's your day?", "Yo. What's on your mind?", "Hey! Good to see you."],
+      howAreYou:  ["Good — running smoothly. How about you?", "Doing alright. What about you?"],
+      thanks:     ["Anytime.", "No prob.", "You're welcome 👍"],
+      farewell:   ["Take care. I'll be here.", "See you around — don't stay up too late.", "Ingat! Come back anytime."],
+      agreement:  ["Bet 👍", "Cool.", "Alright.", "Sige."],
+      disagreement:["Fair enough.", "Okay, no pressure.", "Got it."],
+      sad:        ["That sounds heavy. Wanna talk about it, or just want some company?", "That's rough. I'm here — what's going on?"],
+      tired:      ["You sound drained. Maybe don't try to fight the whole universe tonight.", "Rest first if you can. The problem will still be there after."],
+      frustrated: ["Yeah, that sounds genuinely frustrating. What's the annoying part?", "Okay, let's slow it down. What's the actual problem?"],
+      angry:      ["That's a lot of frustration. What set it off?", "Okay — take a breath. I'm listening."],
+      excited:    ["Okay that's actually great. Tell me more.", "Nice! What made it click?"],
+      happy:      ["Good — nice to hear. What made today a good one?"],
+      nervous:    ["Nerves usually mean you care about the outcome. What's worrying you most?"],
+      confused:   ["Okay, let's untangle it. What part is confusing?", "Wait, I think my brain just took a detour. Can you explain that part again? 😅"],
+      playful:    ["😂 Same reaction honestly.", "HAHA okay — what happened?", "Wait what 😭"],
+      joking:     ["😂 Okay that got me.", "HAHA. Good one."],
+      serious:    ["Okay, I'm with you. Tell me the whole thing.", "Alright — let's take this seriously."],
+      technical:  ["Alright, code mode. Send the error and what you expected to happen.", "Let's debug. What's the exact error, and which line does it point to?"],
+      advice:     ["What's your gut saying? Usually when people ask, they already have a lean.", "I can help you think it through — what are the options you're weighing?"],
+      problem_solving: ["Let's get unstuck. What's blocking you — information, or a decision?", "What's the smallest first step you could take?"],
+      aboutAI:    ["Yeah, I'm an AI. No body, no childhood. Just the personality you're talking to.", "I'm software. Doesn't mean I can't be useful."],
+      compliment: ["That's sweet. Thank you 😊", "Okay, that made my day a bit."],
+      clarification: ["I mean — wait, let me rephrase that 😂", "Yeah okay, I said that badly. Let me try again."],
+      celebration:["YES!! 🎉 You actually did it.", "LET'S GOOO 🔥 Nice."],
+      venting:    ["That's genuinely annoying. What's the annoying part?", "Ugh, that's rough. Let's see if we can sort it."],
+      question:   ["Hmm, good question. My full brain isn't online yet though — what are you trying to figure out?", "That's the kind of thing I'd want to answer properly. What's the context?"],
+      casual_chat:["Hmm. Tell me more.", "Okay, I'm listening. What happened next?", "That makes sense.", "Alright — walk me through it."],
+      general_question: ["Good question. What's the context?"],
+      school:     ["School stuff? What's the assignment?", "Okay, homework mode. What's the topic?"],
+      creative:   ["Ooh, creative mode. What are we making?", "Alright — what's the vibe you're going for?"],
+      very_short_ok:    ["👍", "Cool.", "Alright."],
+      very_short_nah:   ["Okay.", "Fair.", "Got it."],
+      very_short_wait:  ["Yeah?", "What's up?"],
+      very_short_what:  ["Yeah, what is it?", "Hm? What happened?"],
+      very_short_why:   ["Why what? Give me context 😅", "Why what exactly?"],
+      very_short_lol:   ["😂", "Lmao same.", "HAHA"],
+      very_short_emoji: ["😂", "💀 what happened", "Okay that's funny"]
+    };
+    var lastUsed = {};
+    function pick(cat) {
+      var pool = REPLIES[cat] || REPLIES.casual_chat;
+      if (pool.length === 1) return pool[0];
+      var c, tries = 0;
+      do { c = pool[Math.floor(Math.random() * pool.length)]; tries++; }
+      while (c === lastUsed[cat] && tries < 8);
+      lastUsed[cat] = c;
+      return c;
+    }
+    var MOOD_FOR = {
+      greeting: "happy", howAreYou: "idle", thanks: "happy", farewell: "idle",
+      agreement: "idle", disagreement: "idle",
+      sad: "sad", tired: "sad", frustrated: "concerned", angry: "concerned",
+      excited: "excited", happy: "happy", nervous: "concerned", confused: "confused",
+      playful: "happy", joking: "happy", serious: "idle",
+      technical: "thinking", advice: "thinking", problem_solving: "thinking",
+      aboutAI: "idle", compliment: "embarrassed",
+      clarification: "confused", celebration: "excited", venting: "concerned",
+      question: "thinking", casual_chat: "idle", general_question: "thinking",
+      school: "thinking", creative: "thinking",
+      very_short_ok: "idle", very_short_nah: "idle", very_short_wait: "idle",
+      very_short_what: "confused", very_short_why: "confused",
+      very_short_lol: "happy", very_short_emoji: "happy"
+    };
+    function respond(text, convoCtx) {
+      var category = convoCtx ? pickCategoryFromContext(convoCtx) : classifySimple(text);
+      var message = pick(category);
+      var mood = MOOD_FOR[category] || "idle";
+      log("[LOCAL FALLBACK] category:", category, "mood:", mood);
+      var delay = 300 + Math.random() * 400;
+      return new Promise(function (resolve) {
+        setTimeout(function () {
+          resolve({ message: message, mood: mood, state: "responding", source: "local" });
+        }, delay);
+      });
+    }
+    function pickCategoryFromContext(ctx) {
+      var l = ctx.original.toLowerCase().trim();
+      if (ctx.wordCount <= 2) {
+        if (/^(ok|okay|k|sure|yeah|yep|yup|bet|alr|alright|sige|oo)\b/.test(l)) return "very_short_ok";
+        if (/^(no|nope|nah|naw|di|hindi)\b/.test(l)) return "very_short_nah";
+        if (/^wait\b/.test(l)) return "very_short_wait";
+        if (/^(what|huh)\b/.test(l)) return "very_short_what";
+        if (/^why\b/.test(l)) return "very_short_why";
+        if (/^(lol|lmao|haha)/.test(l)) return "very_short_lol";
+        if (ctx.emojis.length && !ctx.slang.length) return "very_short_emoji";
+      }
+      switch (ctx.intent) {
+        case "greeting": return "greeting"; case "farewell": return "farewell";
+        case "agreement": return "agreement"; case "disagreement": return "disagreement";
+        case "clarification": return "clarification";
+        case "celebration": return "celebration"; case "venting": return "venting";
+      }
+      switch (ctx.tone) {
+        case "sad": return "sad"; case "tired": return "tired";
+        case "frustrated": return "frustrated"; case "excited": return "excited";
+        case "happy": return "happy"; case "nervous": return "nervous";
+        case "confused": return "confused"; case "joking": return "joking";
+        case "playful": return "playful"; case "serious": return "serious";
+      }
+      return classifySimple(ctx.original);
+    }
+    function classifySimple(text) {
+      var t = String(text || "").toLowerCase().trim();
+      if (/^(hi|hey|hello|yo|sup|hiya|howdy|gm|gn)\b/.test(t) && t.length < 25) return "greeting";
+      if (/how (are|r) (you|u)|how('?s| is) it going/.test(t)) return "howAreYou";
+      if (/\b(thanks|thank you|thx|ty|cheers)\b/.test(t) && t.length < 30) return "thanks";
+      if (/\b(bye|goodbye|goodnight|see you|later|gtg)\b/.test(t) && t.length < 30) return "farewell";
+      if (/(are you (an? )?(ai|robot|real|human|person|bot))|(what are you)/.test(t)) return "aboutAI";
+      if (/(you'?re (cute|nice|sweet|great|amazing|cool))|(i like you)/.test(t)) return "compliment";
+      if (/(code|error|bug|function|npm|python|javascript|css|html|api|debug|syntax)/.test(t)) return "technical";
+      if (/(should i|what should i|what do you think|any advice|your opinion)/.test(t)) return "advice";
+      if (/(i'?m stuck|i don'?t know what to do|no idea|can'?t figure)/.test(t)) return "problem_solving";
+      if (/(homework|assignment|exam|study|class|school)/.test(t)) return "school";
+      if (/(write (me |a )?(story|poem|song)|draw|design)/.test(t)) return "creative";
+      if (/\?\s*$/.test(t)) return "question";
+      return "casual_chat";
+    }
+    return { respond: respond };
+  })();
+
+
+  /* -------- 16. AI ADAPTER -------- */
+  var AI_CONFIG = {
+    endpoint: "",
+    apiKey: "",
+    model: "gpt-4o-mini",
+    temperature: 0.85,
+    timeoutMs: 30000,
+    useJsonMode: true
+  };
+  function isAIConfigured() {
+    return typeof AI_CONFIG.endpoint === "string" && AI_CONFIG.endpoint.trim().length > 0;
+  }
+  function sendMessageToAI(userMessage, opts) {
+    opts = opts || {};
+    if (!isAIConfigured()) {
+      log("[LOCAL FALLBACK] AI not configured — using local brain.");
+      return LOCAL_BRAIN.respond(userMessage, opts.conversationContext);
+    }
+    var userContext = opts.userContext || "";
+
+    var messages = [{
+      role: "system",
+      content: PERSONALITY.buildSystemPrompt({
+        userName: opts.userName,
+        context: opts.context,
+        humorLevel: opts.humorLevel,
+        responseLength: opts.responseLength,
+        memories: MemoryManager.all(),
+        conversationContext: opts.conversationContext,
+        userContext: userContext
+      })
+    }];
+    var history = ConversationManager.get();
+    for (var i = 0; i < history.length; i++) messages.push({ role: history[i].role, content: history[i].content });
+    var last = history[history.length - 1];
+    if (!last || last.role !== "user" || last.content !== userMessage) {
+      messages.push({ role: "user", content: userMessage });
+    }
+    var body = { model: AI_CONFIG.model, temperature: AI_CONFIG.temperature, messages: messages };
+    if (AI_CONFIG.useJsonMode) body.response_format = { type: "json_object" };
+    var headers = { "Content-Type": "application/json" };
+    if (AI_CONFIG.apiKey) headers["Authorization"] = "Bearer " + AI_CONFIG.apiKey;
+    var controller = new AbortController();
+    var timeoutId = setTimeout(function () { controller.abort(); }, AI_CONFIG.timeoutMs);
+    log("AI request sent.");
+    return fetch(AI_CONFIG.endpoint, { method: "POST", headers: headers, body: JSON.stringify(body), signal: controller.signal })
+      .then(function (res) {
+        clearTimeout(timeoutId);
+        if (res.status === 429) return FALLBACKS.rateLimit;
+        if (!res.ok) { warn("HTTP", res.status); throw new Error("HTTP " + res.status); }
+        return res.json();
+      })
+      .then(function (data) {
+        if (data && data.message) return data;
+        var raw = data && data.choices && data.choices[0] && data.choices[0].message && data.choices[0].message.content;
+        if (!raw) return FALLBACKS.malformed;
+        var processed = processZimeliaResponse(raw);
+        processed.source = "ai";
+        return processed;
+      })
+      .catch(function (err) {
+        clearTimeout(timeoutId);
+        warn("AI error:", err && err.message);
+        if (err && err.name === "AbortError") return FALLBACKS.timeout;
+        log("[LOCAL FALLBACK] AI failed — falling back.");
+        return LOCAL_BRAIN.respond(userMessage, opts.conversationContext);
+      });
+  }
+
+
+  /* -------- 17. COMMAND SYSTEM -------- */
+  var Commands = (function () {
+    var table = {};
+    function register(name, fn) { table[name.toLowerCase()] = fn; }
+    function run(input) {
+      var trimmed = String(input).trim();
+      if (trimmed.charAt(0) !== "/") return null;
+      var parts = trimmed.slice(1).split(/\s+/);
+      var name = parts[0].toLowerCase();
+      var args = parts.slice(1);
+      var fn = table[name];
+      if (!fn) return { message: "I don't know /" + name + ". Try /help.", mood: "confused" };
+      return fn(args);
+    }
+    function is(input) { return String(input || "").trim().charAt(0) === "/"; }
+    function list() { return Object.keys(table); }
+
+    register("help", function () {
+      return {
+        message:
+          "Commands:\n" +
+          "  /help                — this list\n" +
+          "  /status              — full status\n" +
+          "  /mood                — show mood\n" +
+          "  /mood <key>          — set mood\n" +
+          "  /reset               — reset conversation\n" +
+          "  /memory              — session memory\n" +
+          "  /context             — last message analysis\n" +
+          "  /slang               — personal slang\n" +
+          "  /profile             — what I've learned about you\n" +
+          "  /preferences         — your learned preferences\n" +
+          "  /interests           — your recurring interests\n" +
+          "  /projects            — your active projects\n" +
+          "  /remember <key> <value>  — remember explicitly\n" +
+          "  /forget <key>        — forget something\n" +
+          "  /forget-all          — wipe the learned profile",
+        mood: "idle"
+      };
+    });
+
+    register("status", function () {
+      var s = ZimeliaInternalState;
+      var m = UserSystem.getMetrics();
+      return {
+        message:
+          "ZIMELIA " + IDENTITY.version + "\n" +
+          "Role: " + IDENTITY.role + "\n" +
+          "State: " + StateManager.get() + "\n" +
+          "Mood: " + MoodManager.get() + "\n" +
+          "Online: " + (StateManager.isOnline() ? "yes" : "no") + "\n" +
+          "Brain: " + (isAIConfigured() ? "AI model" : "Local fallback") + "\n" +
+          "Conversation turns: " + ConversationManager.length() + "\n" +
+          "Session memories: " + MemoryManager.all().length + "\n" +
+          "Last context: " + (s.lastContext || "—") + "\n" +
+          "Last tone: " + (s.lastTone || "—") + "\n" +
+          "Understanding (internal): " +
+            "comm " + m.communicationUnderstanding +
+            " · prefs " + m.preferenceUnderstanding +
+            " · projects " + m.projectUnderstanding,
+        mood: "idle"
+      };
+    });
+
+    register("mood", function (args) {
+      if (!args.length) return { message: "Current mood: " + MoodManager.get(), mood: "idle" };
+      var target = args[0].toLowerCase();
+      if (!isValidMood(target)) return { message: "Unknown mood: " + target + ". Options: " + MOODS.map(function (m) { return m.key; }).join(", "), mood: "confused" };
+      MoodManager.set(target);
+      return { message: "Mood set to: " + target, mood: target };
+    });
+
+    register("reset", function () {
+      ConversationManager.reset();
+      MemoryManager.clear();
+      return { message: "Conversation and session memory reset.", mood: "idle" };
+    });
+    register("clear", function () {
+      ConversationManager.reset();
+      MemoryManager.clear();
+      return { message: "Conversation and session memory cleared.", mood: "idle" };
+    });
+
+    register("memory", function () {
+      var mem = MemoryManager.all();
+      if (!mem.length) return { message: "No session memories yet.", mood: "idle" };
+      var lines = mem.map(function (m) { return "  • " + m.key + " = " + JSON.stringify(m.value); });
+      return { message: "Session memory:\n" + lines.join("\n"), mood: "idle" };
+    });
+
+    register("context", function () {
+      var s = ZimeliaInternalState;
+      return {
+        message:
+          "Last message analysis:\n" +
+          "  Context (topic): " + (s.lastContext || "—") + "\n" +
+          "  Tone: " + (s.lastTone || "—") + "\n" +
+          "  Language: " + (s.lastLanguage || "—") + "\n" +
+          "  Intent: " + (s.lastIntent || "—") + "\n" +
+          "  Slang: " + (s.lastSlang && s.lastSlang.length ? s.lastSlang.join(", ") : "—") + "\n" +
+          "  Emojis: " + (s.lastEmojis && s.lastEmojis.length ? s.lastEmojis.join(" ") : "—"),
+        mood: "idle"
+      };
+    });
+
+    register("slang", function () {
+      var ps = ConversationLanguage.getPersonalSlang();
+      var keys = Object.keys(ps);
+      if (!keys.length) return { message: "No personal slang registered this session. Try: \"whenever I say X I mean Y\".", mood: "idle" };
+      return { message: "Personal slang:\n" + keys.map(function (k) { return "  • " + k + " = " + ps[k]; }).join("\n"), mood: "idle" };
+    });
+
+    register("profile", function () {
+      var p = UserSystem.getProfile();
+      var lines = ["What I've learned (profile v" + p.version + "):"];
+
+      function showBucket(label, bucket, formatter) {
+        var keys = Object.keys(bucket);
+        if (!keys.length) return;
+        lines.push("");
+        lines.push(label + ":");
+        for (var i = 0; i < keys.length; i++) {
+          lines.push("  " + formatter(keys[i], bucket[keys[i]]));
+        }
+      }
+
+      showBucket("Communication style", p.communicationStyle, function (k, v) {
+        return k + ": " + v.value + "  (confidence " + v.confidence.toFixed(2) + ", " + v.source + ")";
+      });
+      showBucket("Preferences", p.preferences, function (k, v) {
+        return k + ": " + v.value + "  (confidence " + v.confidence.toFixed(2) + ", " + v.source + ")";
+      });
+      showBucket("Interests", p.interests, function (k, v) {
+        return k + "  (confidence " + v.confidence.toFixed(2) + ", mentions " + (v.mentions || 1) + ")";
+      });
+      showBucket("Skills", p.skills, function (k, v) {
+        return k + ": " + v.value + "  (confidence " + v.confidence.toFixed(2) + ")";
+      });
+      showBucket("Projects", p.projects, function (k, v) {
+        return k + (v.technologies && v.technologies.length ? " [" + v.technologies.join(", ") + "]" : "") + "  (confidence " + v.confidence.toFixed(2) + ")";
+      });
+      showBucket("Terminology", p.terminology, function (k, v) {
+        return '"' + k + '" = ' + v.value;
+      });
+
+      lines.push("");
+      lines.push("Metrics (internal): comm " + p.metrics.communicationUnderstanding +
+                 " · prefs " + p.metrics.preferenceUnderstanding +
+                 " · projects " + p.metrics.projectUnderstanding);
+      lines.push("");
+      lines.push("Say /forget <key> or /forget-all to remove items.");
+
+      return { message: lines.join("\n"), mood: "idle" };
+    });
+
+    register("preferences", function () {
+      var prefs = UserSystem.getPreferences();
+      var keys = Object.keys(prefs);
+      if (!keys.length) return { message: "I haven't learned any preferences yet.", mood: "idle" };
+      var lines = keys.map(function (k) {
+        var v = prefs[k];
+        return "  • " + k + " = " + v.value + "  (" + v.source + ", " + v.confidence.toFixed(2) + ")";
+      });
+      return { message: "Learned preferences:\n" + lines.join("\n"), mood: "idle" };
+    });
+
+    register("interests", function () {
+      var ints = UserSystem.getInterests();
+      var keys = Object.keys(ints);
+      if (!keys.length) return { message: "No recurring interests detected yet.", mood: "idle" };
+      var lines = keys.sort(function (a, b) { return ints[b].confidence - ints[a].confidence; })
+        .map(function (k) { return "  • " + k + "  (" + ints[k].confidence.toFixed(2) + ", " + ints[k].mentions + " mentions)"; });
+      return { message: "Detected interests:\n" + lines.join("\n"), mood: "idle" };
+    });
+
+    register("projects", function () {
+      var projs = UserSystem.getProjects();
+      var keys = Object.keys(projs);
+      if (!keys.length) return { message: "No projects tracked yet.", mood: "idle" };
+      var lines = keys.map(function (k) {
+        var v = projs[k];
+        return "  • " + v.name +
+               (v.technologies && v.technologies.length ? "  [" + v.technologies.join(", ") + "]" : "") +
+               "  (" + (v.mentions || 1) + " mention" + ((v.mentions || 1) > 1 ? "s" : "") + ")";
+      });
+      return { message: "Tracked projects:\n" + lines.join("\n"), mood: "idle" };
+    });
+
+    register("remember", function (args) {
+      if (args.length < 2) return { message: "Usage: /remember <key> <value>", mood: "confused" };
+      var key = args[0];
+      var value = args.slice(1).join(" ");
+      UserSystem.remember(key, value);
+      return { message: "Got it — I'll remember that " + key + " = " + value + ".", mood: "happy" };
+    });
+
+    register("forget", function (args) {
+      if (!args.length) return { message: "Usage: /forget <key>", mood: "confused" };
+      var removed = UserSystem.forget(args[0]);
+      if (!removed.length) return { message: "Nothing stored under \"" + args[0] + "\".", mood: "idle" };
+      return { message: "Forgot: " + removed.join(", "), mood: "idle" };
+    });
+
+    register("forget-all", function () {
+      UserSystem.clearMemory();
+      return { message: "Done — I've cleared everything I'd learned about you.", mood: "idle" };
+    });
+
+    return { is: is, run: run, list: list, register: register };
+  })();
+
+
+  /* -------- 18. SETTINGS MANAGER -------- */
+  var STORAGE_KEY = "zimelia.settings";
+  var SETTINGS_DEFAULTS = {
+    theme: "dark", animations: "on", glow: "on",
+    humorLevel: PROFILE.defaults.humorLevel,
+    responseLength: PROFILE.defaults.responseLength
+  };
+  var SettingsManager = (function () {
+    var settings = (function () {
+      try {
+        var raw = localStorage.getItem(STORAGE_KEY);
+        if (!raw) return Object.assign({}, SETTINGS_DEFAULTS);
+        return Object.assign({}, SETTINGS_DEFAULTS, JSON.parse(raw));
+      } catch (e) { return Object.assign({}, SETTINGS_DEFAULTS); }
+    })();
+    function save() { try { localStorage.setItem(STORAGE_KEY, JSON.stringify(settings)); } catch (e) {} }
+    return {
+      get: function (k) { return settings[k]; },
+      all: function () { return Object.assign({}, settings); },
+      set: function (k, v) { settings[k] = v; save(); return v; }
+    };
+  })();
+
+
+  /* -------- 19. EVENT BUS -------- */
+  function dispatch(name, detail) {
+    try { window.dispatchEvent(new CustomEvent(name, { detail: detail || {} })); }
+    catch (e) { warn("Event dispatch failed:", name, e); }
+  }
+  var Events = {
+    on: function (name, fn) { window.addEventListener(name, fn); },
+    off: function (name, fn) { window.removeEventListener(name, fn); },
+    emit: dispatch
+  };
+
+
+  /* -------- 20. ORCHESTRATOR -------- */
+  var ZimeliaInternalState = {
+    lastContext: "casual", lastTone: "casual", lastLanguage: "english",
+    lastIntent: "casual_chat", lastSlang: [], lastEmojis: []
+  };
+
+  function processUserMessage(rawText) {
+    var text = String(rawText || "").trim();
+    if (!text) return Promise.resolve({ message: "", mood: MoodManager.get(), state: StateManager.get(), source: "empty" });
+
+    log("User message received:", text);
+
+    // Commands short-circuit
+    if (Commands.is(text)) {
+      var cmdResult = Commands.run(text);
+      if (cmdResult) {
+        ConversationManager.add("user", text);
+        ConversationManager.add("assistant", cmdResult.message);
+        MoodManager.set(cmdResult.mood || "idle");
+        StateManager.set("idle");
+        dispatch("zimelia:response", cmdResult);
+        return Promise.resolve({ message: cmdResult.message, mood: cmdResult.mood || "idle", state: "idle", source: "command" });
+      }
+    }
+
+    // 1. Language context
+    var conversationCtx = ConversationLanguage.buildContext(text);
+    if (conversationCtx) {
+      ZimeliaInternalState.lastTone = conversationCtx.tone;
+      ZimeliaInternalState.lastLanguage = conversationCtx.languageStyle;
+      ZimeliaInternalState.lastIntent = conversationCtx.intent;
+      ZimeliaInternalState.lastSlang = conversationCtx.slang;
+      ZimeliaInternalState.lastEmojis = conversationCtx.emojis;
+      log("Language:", conversationCtx.tone, "|", conversationCtx.languageStyle, "|", conversationCtx.intent);
+      dispatch("zimelia:contextChange", { conversationContext: conversationCtx });
+    }
+
+    // 2. Personal slang registration (session)
+    var psRegistration = ConversationLanguage.scanPersonalSlang(text);
+    if (psRegistration) {
+      var teachReply = { message: "Got it — I'll remember that \"" + psRegistration.key + "\" means " + psRegistration.value + " for this session.", mood: "happy" };
+      ConversationManager.add("user", text);
+      ConversationManager.add("assistant", teachReply.message);
+      MoodManager.set(teachReply.mood);
+      dispatch("zimelia:response", teachReply);
+      return Promise.resolve({ message: teachReply.message, mood: teachReply.mood, state: "idle", source: "personal-slang" });
+    }
+
+    // 3. Session memory extraction
+    extractSessionMemories(text);
+
+    // 4. Adaptive learning (the new user system)
+    UserSystem.learnFromMessage(text, conversationCtx);
+    dispatch("zimelia:userLearned", { profile: UserSystem.getMetrics() });
+
+    // 5. Topic context
+    var context = detectContext(text);
+    ZimeliaInternalState.lastContext = context;
+    log("Topic context:", context);
+
+    // 6. Apply preferences to response
+    var baseSettings = SettingsManager.all();
+    var effective = UserSystem.applyUserPreferences(conversationCtx, baseSettings);
+    if (effective.notes.length) log("Adaptive response settings:", effective.notes.join(" | "));
+
+    // 7. Thinking state
+    StateManager.set("thinking");
+    dispatch("zimelia:thinking", { context: context, conversationContext: conversationCtx });
+
+    // 8. Record user turn
+    ConversationManager.add("user", text);
+
+    // 9. Ask the AI
+    var userContext = UserSystem.buildPromptContext();
+    return sendMessageToAI(text, {
+      context: context,
+      humorLevel: effective.humorLevel,
+      responseLength: effective.responseLength,
+      conversationContext: conversationCtx,
+      userContext: userContext
+    })
+    .then(function (rawResponse) {
+      var envelope = processZimeliaResponse(rawResponse);
+      if (rawResponse && rawResponse.source) envelope.source = rawResponse.source;
+      log("Response received. Source:", envelope.source, "| Mood:", envelope.mood);
+      ConversationManager.add("assistant", envelope.message);
+      StateManager.set("responding");
+      MoodManager.set(envelope.mood);
+      dispatch("zimelia:response", envelope);
+      setTimeout(function () { StateManager.set("idle"); }, 200);
+      return envelope;
+    })
+    .catch(function (err) {
+      warn("Orchestrator error:", err);
+      StateManager.set("error");
+      var fallback = FALLBACKS.offline;
+      ConversationManager.add("assistant", fallback.message);
+      MoodManager.set(fallback.mood);
+      dispatch("zimelia:error", { error: String(err) });
+      setTimeout(function () { StateManager.set("idle"); }, 400);
+      return { message: fallback.message, mood: fallback.mood, state: "idle", source: "error" };
+    });
+  }
+
+  function extractSessionMemories(text) {
+    var nameMatch = text.match(/\bmy name is ([A-Za-z][A-Za-z0-9 _-]{0,30})/i);
+    if (nameMatch) MemoryManager.add("user_name", nameMatch[1].trim());
+    var likeMatch = text.match(/\bi (?:like|love) ([A-Za-z][A-Za-z0-9 _-]{0,40})/i);
+    if (likeMatch) {
+      var existing = MemoryManager.get("likes");
+      var likes = existing ? (Array.isArray(existing.value) ? existing.value : [existing.value]) : [];
+      var newLike = likeMatch[1].trim();
+      if (likes.indexOf(newLike) === -1) likes.push(newLike);
+      MemoryManager.add("likes", likes);
+    }
+  }
+
+
+  /* -------- 21. PUBLIC API -------- */
+  var Zimelia = {
+    identity: IDENTITY,
+    profile: PROFILE,
+    moods: MOODS,
+
+    sendMessage: processUserMessage,
+    resetConversation: function () {
+      ConversationManager.reset();
+      MemoryManager.clear();
+      log("Conversation reset.");
+      dispatch("zimelia:response", { message: "", mood: MoodManager.get(), source: "reset" });
+    },
+
+    setMood: MoodManager.set,
+    getMood: MoodManager.get,
+    resetMood: MoodManager.reset,
+
+    setState: StateManager.set,
+    getState: StateManager.get,
+    isBusy: StateManager.isBusy,
+    isThinking: StateManager.isThinking,
+    isOnline: StateManager.isOnline,
+
+    memory: MemoryManager,
+    getConversation: ConversationManager.get,
+
+    commands: Commands.list,
+
+    language: {
+      analyze: ConversationLanguage.buildContext,
+      personalSlang: ConversationLanguage.getPersonalSlang
+    },
+
+    // User system — the adaptive learning API
+    user: {
+      getProfile: UserSystem.getProfile,
+      getPreferences: UserSystem.getPreferences,
+      getInterests: UserSystem.getInterests,
+      getProjects: UserSystem.getProjects,
+      getSkills: UserSystem.getSkills,
+      getTerminology: UserSystem.getTerminology,
+      getObservations: UserSystem.getObservations,
+      getMetrics: UserSystem.getMetrics,
+      remember: UserSystem.remember,
+      forget: UserSystem.forget,
+      clearMemory: UserSystem.clearMemory,
+      learn: UserSystem.learnFromMessage,
+      applyPreferences: UserSystem.applyUserPreferences
+    },
+
+    setConfig: function (key, value) {
+      AI_CONFIG[key] = value;
+      log("AI config updated:", key);
+      dispatch("zimelia:stateChange", { state: StateManager.get() });
+    },
+    getConfig: function () { return Object.assign({}, AI_CONFIG); },
+
+    on: Events.on,
+    off: Events.off,
+
+    getStatus: function () {
+      return {
+        name: IDENTITY.name, version: IDENTITY.version, role: IDENTITY.role,
+        state: StateManager.get(), mood: MoodManager.get(),
+        online: StateManager.isOnline(),
+        brain: isAIConfigured() ? "ai" : "local",
+        conversationLength: ConversationManager.length(),
+        memories: MemoryManager.all().length,
+        context: ZimeliaInternalState.lastContext,
+        tone: ZimeliaInternalState.lastTone,
+        language: ZimeliaInternalState.lastLanguage,
+        intent: ZimeliaInternalState.lastIntent,
+        understanding: UserSystem.getMetrics()
+      };
+    },
+
+    settings: SettingsManager
+  };
+  window.Zimelia = Zimelia;
+
+
+  /* -------- 22. UI BINDINGS -------- */
+  var root             = document.documentElement;
+  var zimeliaImage     = document.getElementById("zimeliaImage");
+  var stagePlaceholder = document.getElementById("stagePlaceholder");
+  var placeholderFile  = document.getElementById("placeholderFile");
+  var statusState      = document.getElementById("statusState");
+  var statusMood       = document.getElementById("statusMood");
+  var statusContext    = document.getElementById("statusContext");
+  var statusTone       = document.getElementById("statusTone");
+  var statusLearning   = document.getElementById("statusLearning");
+  var statusConnection = document.getElementById("statusConnection");
+  var moodGrid         = document.getElementById("moodGrid");
+  var chatForm         = document.getElementById("chatForm");
+  var chatInput        = document.getElementById("chatInput");
+  var chatLog          = document.getElementById("chatLog");
+  var sendBtn          = document.getElementById("sendBtn");
+  var micBtn           = document.getElementById("micBtn");
+  var plusBtn          = document.getElementById("plusBtn");
+  var talkBtn          = document.getElementById("talkBtn");
+  var chatTag          = document.getElementById("chatTag");
+  var chatHint         = document.getElementById("chatHint");
+  var clearChatBtn     = document.getElementById("clearChatBtn");
+  var showProfileBtn   = document.getElementById("showProfileBtn");
+  var brainStat        = document.getElementById("brainStat");
+  var versionBadge     = document.getElementById("versionBadge");
+  var aboutVersion     = document.getElementById("aboutVersion");
+  var settingsPanel    = document.getElementById("settingsPanel");
+  var settingsOpenBtn  = document.getElementById("settingsOpen");
+  var settingsCloseBtn = document.getElementById("settingsClose");
+  var scrim            = document.getElementById("scrim");
+  var toastStack       = document.getElementById("toastStack");
+  var particlesWrap    = document.getElementById("particles");
+
+  var settings = SettingsManager;
+
+  function applyUISettings() {
+    root.setAttribute("data-theme", settings.get("theme"));
+    root.setAttribute("data-animations", settings.get("animations"));
+    root.setAttribute("data-glow", settings.get("glow"));
+    syncSegmentedButtons();
+  }
+  function syncSegmentedButtons() {
+    var all = settings.all();
+    var btns = document.querySelectorAll(".segmented [data-setting]");
+    for (var i = 0; i < btns.length; i++) {
+      var b = btns[i];
+      var key = b.getAttribute("data-setting");
+      var val = b.getAttribute("data-value");
+      var active = String(all[key]) === val;
+      b.classList.toggle("is-active", active);
+      b.setAttribute("aria-pressed", active ? "true" : "false");
+    }
+  }
+  function buildMoodGrid() {
+    if (!moodGrid) return;
+    moodGrid.innerHTML = "";
+    for (var i = 0; i < MOODS.length; i++) {
+      (function (mood) {
+        var btn = document.createElement("button");
+        btn.type = "button";
+        btn.className = "mood-btn";
+        btn.setAttribute("data-mood", mood.key);
+        btn.setAttribute("aria-pressed", "false");
+        btn.innerHTML =
+          '<span class="mood-btn__emoji" aria-hidden="true">' + mood.emoji + "</span>" +
+          "<span>" + mood.label + "</span>";
+        btn.addEventListener("click", function () { Zimelia.setMood(mood.key); });
+        moodGrid.appendChild(btn);
+      })(MOODS[i]);
+    }
+  }
+  function loadCharacterImage(src, mood) {
+    if (!zimeliaImage) return;
+    var probe = new Image();
+    probe.onload = function () {
+      hidePlaceholder();
+      zimeliaImage.src = src;
+      zimeliaImage.alt = "Zimelia, chibi AI assistant. Current mood: " + mood.label + ".";
+      zimeliaImage.classList.remove("is-switching");
+    };
+    probe.onerror = function () {
+      if (src.indexOf(IDLE_FILE) === -1) { loadCharacterImage(ASSETS_PATH + IDLE_FILE, MOOD_INDEX.idle); return; }
+      showPlaceholder(IDLE_FILE);
+    };
+    zimeliaImage.classList.add("is-switching");
+    probe.src = src;
+  }
+  function showPlaceholder(fileName) {
+    if (stagePlaceholder) stagePlaceholder.hidden = false;
+    if (placeholderFile) placeholderFile.textContent = ASSETS_PATH + fileName;
+    if (zimeliaImage) zimeliaImage.style.visibility = "hidden";
+  }
+  function hidePlaceholder() {
+    if (stagePlaceholder) stagePlaceholder.hidden = true;
+    if (zimeliaImage) zimeliaImage.style.visibility = "visible";
+  }
+  function appendMessage(who, text, cls) {
+    var wrap = document.createElement("div");
+    wrap.className = "msg " + (cls || "msg--zimelia");
+    var label = document.createElement("span");
+    label.className = "msg__who";
+    label.textContent = who;
+    var body = document.createElement("p");
+    body.textContent = text;
+    wrap.appendChild(label);
+    wrap.appendChild(body);
+    chatLog.appendChild(wrap);
+    chatLog.scrollTop = chatLog.scrollHeight;
+    return wrap;
+  }
+  function appendTyping() {
+    var wrap = document.createElement("div");
+    wrap.className = "msg msg--zimelia msg--typing";
+    wrap.innerHTML = '<span class="msg__who">Zimelia</span><p><span class="dot"></span><span class="dot"></span><span class="dot"></span></p>';
+    chatLog.appendChild(wrap);
+    chatLog.scrollTop = chatLog.scrollHeight;
+    return wrap;
+  }
+  function setSending(state) {
+    if (sendBtn) sendBtn.disabled = state;
+    if (chatInput) chatInput.disabled = state;
+  }
+
+  var currentTypingEl = null;
+
+  Zimelia.on("zimelia:thinking", function () {
+    setSending(true);
+    if (currentTypingEl) currentTypingEl.remove();
+    currentTypingEl = appendTyping();
+  });
+  Zimelia.on("zimelia:response", function (e) {
+    var d = e.detail || {};
+    if (currentTypingEl) { currentTypingEl.remove(); currentTypingEl = null; }
+    setSending(false);
+    if (d.message) {
+      var isSystem = d.source === "command" || d.source === "personal-slang";
+      appendMessage("Zimelia", d.message, isSystem ? "msg--system" : "msg--zimelia");
+    }
+  });
+  Zimelia.on("zimelia:error", function () {
+    if (currentTypingEl) { currentTypingEl.remove(); currentTypingEl = null; }
+    setSending(false);
+  });
+  Zimelia.on("zimelia:moodChange", function (e) {
+    var def = (e.detail && e.detail.def) || getMoodDef(e.detail.mood);
+    loadCharacterImage(ASSETS_PATH + def.file, def);
+    if (statusMood) statusMood.textContent = def.status;
+    var btns = moodGrid.querySelectorAll(".mood-btn");
+    for (var i = 0; i < btns.length; i++) {
+      var active = btns[i].getAttribute("data-mood") === def.key;
+      btns[i].classList.toggle("is-active", active);
+      btns[i].setAttribute("aria-pressed", active ? "true" : "false");
+    }
+  });
+  Zimelia.on("zimelia:stateChange", function (e) {
+    var d = e.detail || {};
+    if (statusState) statusState.textContent = d.state || "idle";
+    if (statusConnection) {
+      if (!Zimelia.isOnline()) {
+        statusConnection.textContent = "Offline";
+        statusConnection.style.color = "var(--amber)";
+      } else if (isAIConfigured()) {
+        statusConnection.textContent = "AI · online";
+        statusConnection.style.color = "var(--green)";
+      } else {
+        statusConnection.textContent = "Local fallback";
+        statusConnection.style.color = "var(--amber)";
+      }
+    }
+    if (chatTag) chatTag.textContent = isAIConfigured() ? "AI LIVE" : "LOCAL";
+    if (brainStat) brainStat.textContent = isAIConfigured() ? "AI model" : "Local fallback";
+  });
+  Zimelia.on("zimelia:contextChange", function (e) {
+    var c = e.detail && e.detail.conversationContext;
+    if (!c) return;
+    if (statusTone) statusTone.textContent = c.tone;
+  });
+  Zimelia.on("zimelia:userLearned", function () {
+    var m = UserSystem.getMetrics();
+    if (statusLearning) {
+      var v = Math.max(m.communicationUnderstanding, m.preferenceUnderstanding, m.projectUnderstanding);
+      statusLearning.textContent = v > 0 ? "learning (" + v.toFixed(2) + ")" : "listening";
+    }
+  });
+
+  function handleChatSubmit(ev) {
+    ev.preventDefault();
+    if (Zimelia.isBusy()) return;
+    var text = chatInput.value.trim();
+    if (!text) return;
+    appendMessage("You", text, "msg--user");
+    chatInput.value = "";
+    Zimelia.sendMessage(text).then(function () {
+      var s = Zimelia.getStatus();
+      if (statusContext) statusContext.textContent = s.context;
+      if (statusTone) statusTone.textContent = s.tone;
+      chatInput.focus();
+    });
+  }
+
+  var lastFocused = null;
+  function openSettings() {
+    lastFocused = document.activeElement;
+    scrim.hidden = false;
+    settingsPanel.classList.add("is-open");
+    settingsPanel.setAttribute("aria-hidden", "false");
+    settingsOpenBtn.setAttribute("aria-expanded", "true");
+    if (settingsCloseBtn) settingsCloseBtn.focus();
+  }
+  function closeSettings() {
+    scrim.hidden = true;
+    settingsPanel.classList.remove("is-open");
+    settingsPanel.setAttribute("aria-hidden", "true");
+    settingsOpenBtn.setAttribute("aria-expanded", "false");
+    if (lastFocused && typeof lastFocused.focus === "function") lastFocused.focus();
+  }
+  function showToast(message) {
+    if (!toastStack) return;
+    var t = document.createElement("div");
+    t.className = "toast";
+    t.setAttribute("role", "status");
+    t.textContent = message;
+    toastStack.appendChild(t);
+    setTimeout(function () {
+      t.classList.add("is-out");
+      setTimeout(function () { if (t.parentNode) t.parentNode.removeChild(t); }, 260);
+    }, 3200);
+  }
+
+  var QUICK_MESSAGES = {
+    chat: "Chat is right there — type something and say hi.",
+    voice: "Voice system is coming soon.",
+    ask: "Ask me anything — I'm listening.",
+    explore: "More features are on the way."
+  };
+  function scrollToTarget(selector) {
+    var el = document.querySelector(selector);
+    if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+  function createParticles(count) {
+    if (!particlesWrap) return;
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    var total = window.innerWidth < 640 ? Math.round(count / 2) : count;
+    var frag = document.createDocumentFragment();
+    for (var i = 0; i < total; i++) {
+      var p = document.createElement("span");
+      p.className = "particle";
+      p.style.left = Math.random() * 100 + "%";
+      p.style.bottom = "-10px";
+      p.style.animationDuration = (14 + Math.random() * 16) + "s";
+      p.style.animationDelay = (-Math.random() * 20) + "s";
+      p.style.transform = "scale(" + (0.6 + Math.random() * 1.6) + ")";
+      frag.appendChild(p);
+    }
+    particlesWrap.appendChild(frag);
+  }
+
+  function bindUIEvents() {
+    if (chatForm) chatForm.addEventListener("submit", handleChatSubmit);
+    if (clearChatBtn) clearChatBtn.addEventListener("click", function () {
+      Zimelia.resetConversation();
+      chatLog.innerHTML = '<div class="msg msg--zimelia"><span class="msg__who">Zimelia</span><p>Fresh start. What\'s on your mind?</p></div>';
+      if (statusContext) statusContext.textContent = "—";
+      if (statusTone) statusTone.textContent = "—";
+      showToast("Conversation cleared.");
+    });
+    if (showProfileBtn) showProfileBtn.addEventListener("click", function () {
+      var p = UserSystem.getProfile();
+      var c = 0;
+      ["communicationStyle","preferences","interests","skills","projects","terminology","interactionPreferences"].forEach(function (b) {
+        c += Object.keys(p[b]).length;
+      });
+      closeSettings();
+      Zimelia.sendMessage("/profile");
+      showToast(c ? ("Showing " + c + " learned item" + (c === 1 ? "" : "s")) : "Nothing learned yet.");
+    });
+    if (micBtn) micBtn.addEventListener("click", function () { showToast("Voice input is coming soon."); });
+    if (plusBtn) plusBtn.addEventListener("click", function () { showToast("Attachments are coming soon."); });
+    if (talkBtn) talkBtn.addEventListener("click", function () {
+      if (chatInput) chatInput.focus();
+      showToast("Say hello — I'm listening.");
+    });
+    var qb = document.querySelectorAll(".quick__btn");
+    for (var i = 0; i < qb.length; i++) {
+      (function (b) {
+        b.addEventListener("click", function () {
+          showToast(QUICK_MESSAGES[b.getAttribute("data-action")] || "Coming soon.");
+        });
+      })(qb[i]);
+    }
+    var sb = document.querySelectorAll("[data-scroll]");
+    for (var j = 0; j < sb.length; j++) {
+      (function (el) {
+        el.addEventListener("click", function (e) {
+          e.preventDefault();
+          scrollToTarget(el.getAttribute("data-scroll"));
+        });
+      })(sb[j]);
+    }
+    if (settingsOpenBtn) settingsOpenBtn.addEventListener("click", openSettings);
+    if (settingsCloseBtn) settingsCloseBtn.addEventListener("click", closeSettings);
+    if (scrim) scrim.addEventListener("click", closeSettings);
+    document.addEventListener("keydown", function (e) {
+      if (e.key === "Escape" && settingsPanel.classList.contains("is-open")) closeSettings();
+    });
+    var seg = document.querySelectorAll(".segmented [data-setting]");
+    for (var k = 0; k < seg.length; k++) {
+      (function (btn) {
+        btn.addEventListener("click", function () {
+          settings.set(btn.getAttribute("data-setting"), btn.getAttribute("data-value"));
+          applyUISettings();
+        });
+      })(seg[k]);
+    }
+  }
+
+
+  /* -------- 23. INIT -------- */
+  function init() {
+    if (versionBadge) versionBadge.textContent = IDENTITY.version;
+    if (aboutVersion) aboutVersion.textContent = IDENTITY.version;
+
+    applyUISettings();
+    buildMoodGrid();
+    bindUIEvents();
+    createParticles(22);
+
+    Zimelia.setMood(PROFILE.defaults.mood);
+    Zimelia.setState(PROFILE.defaults.state);
+
+    // Show a small summary of what's already learned (if anything)
+    var p = UserSystem.getProfile();
+    var total = 0;
+    ["communicationStyle","preferences","interests","skills","projects","terminology","interactionPreferences"].forEach(function (b) {
+      total += Object.keys(p[b]).length;
+    });
+    if (statusLearning) {
+      statusLearning.textContent = total ? ("learning (" + total + " items)") : "listening";
+    }
+
+    log("ZIMELIA ready. Version", IDENTITY.version);
+    log("Brain:", isAIConfigured() ? "AI model" : "Local fallback");
+    log("Language layer: active");
+    log("User understanding: active. Already knows " + total + " item(s).");
+    log("Public API: window.Zimelia");
+
+    console.info(
+      "%c[Zimelia] " + IDENTITY.version + " ready.%c\n" +
+      "Public API: window.Zimelia\n" +
+      "Commands: /help /status /profile /preferences /interests /projects /remember /forget /forget-all\n" +
+      "Try in console: Zimelia.user.getProfile()\n" +
+      "Enable a real AI: Zimelia.setConfig('endpoint', '...'); Zimelia.setConfig('apiKey', 'sk-...')",
+      "color:#A78BFA;font-weight:bold", "color:inherit"
+    );
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", init);
+  } else {
+    init();
+  }
+
+})();
+</script>
+
+</body>
+</html>
