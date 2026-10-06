@@ -260,7 +260,7 @@ main { max-width: 1280px; margin: 0 auto; padding: 28px 22px 60px; }
         </div>
         <span class="stage__badge">
           <span class="status-pill__dot" aria-hidden="true"></span>
-          ZIMELIA · v<span id="versionBadge">0.6.1</span>
+          ZIMELIA · v<span id="versionBadge">0.7.0</span>
         </span>
       </div>
 
@@ -346,10 +346,10 @@ main { max-width: 1280px; margin: 0 auto; padding: 28px 22px 60px; }
         <h3 class="about__name">ZIMELIA</h3>
         <p class="about__role">Personal AI Assistant</p>
         <p class="about__text">Zimelia is a personal AI assistant designed to be helpful, friendly, and easy to talk to. She is calm, a little playful, and always happy to see you.</p>
-        <p class="about__text">She understands how people talk online — slang, abbreviations, emojis, memes, Taglish, typos. She also learns how you like to be talked to, over time, without becoming nosy about it.</p>
+        <p class="about__text">She understands how people talk online — slang, abbreviations, emojis, memes, Taglish, typos. She also recognises praise, teasing, and compliments naturally, and learns how you like to be talked to over time.</p>
         <dl class="about__stats">
           <div class="stat"><dt class="stat__label">Status</dt><dd class="stat__value stat__value--live">Online</dd></div>
-          <div class="stat"><dt class="stat__label">Version</dt><dd class="stat__value" id="aboutVersion">0.6.1</dd></div>
+          <div class="stat"><dt class="stat__label">Version</dt><dd class="stat__value" id="aboutVersion">0.7.0</dd></div>
           <div class="stat"><dt class="stat__label">Brain</dt><dd class="stat__value" id="brainStat">Local fallback</dd></div>
         </dl>
       </div>
@@ -359,7 +359,7 @@ main { max-width: 1280px; margin: 0 auto; padding: 28px 22px 60px; }
   <section class="section" id="features" aria-labelledby="featuresTitle">
     <div class="section__head">
       <h2 class="section__title" id="featuresTitle">What's Next</h2>
-      <p class="section__sub">Zimelia is growing. Adaptive user understanding is now live.</p>
+      <p class="section__sub">Zimelia is growing. Compliment & praise understanding is now live.</p>
     </div>
     <div class="features-grid">
       <article class="feature">
@@ -381,9 +381,9 @@ main { max-width: 1280px; margin: 0 auto; padding: 28px 22px 60px; }
         <span class="badge-live">LIVE</span>
       </article>
       <article class="feature">
-        <div class="feature__icon" aria-hidden="true">🗣️</div>
-        <h3 class="feature__title">CASUAL LANGUAGE</h3>
-        <p class="feature__text">Slang, emojis, abbreviations, Taglish.</p>
+        <div class="feature__icon" aria-hidden="true">💜</div>
+        <h3 class="feature__title">COMPLIMENT AWARENESS</h3>
+        <p class="feature__text">Recognises praise, teasing, gratitude, and celebration.</p>
         <span class="badge-live">LIVE</span>
       </article>
       <article class="feature">
@@ -398,7 +398,7 @@ main { max-width: 1280px; margin: 0 auto; padding: 28px 22px 60px; }
 </main>
 
 <footer class="footer">
-  <p>ZIMELIA · Identity · Personality · Language · User Understanding · Memory · Mood · State · AI layer ready.</p>
+  <p>ZIMELIA · Identity · Personality · Language · Compliment Awareness · User Understanding · Memory · Mood · State · AI layer ready.</p>
 </footer>
 
 <div class="scrim" id="scrim" hidden></div>
@@ -476,7 +476,7 @@ main { max-width: 1280px; margin: 0 auto; padding: 28px 22px 60px; }
   "use strict";
 
   /* ============================================================
-     ZIMELIA — FULL SYSTEM  ·  v0.6.1
+     ZIMELIA — FULL SYSTEM  ·  v0.7.0
      Sections:
        1.  Debug
        2.  Identity
@@ -486,7 +486,8 @@ main { max-width: 1280px; margin: 0 auto; padding: 28px 22px 60px; }
        6.  Personality
        7.  Context detection
        8.  Conversation language layer
-       9.  USER SYSTEM  (hardened — never crashes on missing data)
+       8.5 COMPLIMENT SYSTEM  (NEW)
+       9.  USER SYSTEM  (hardened)
        10. Memory manager (session)
        11. Conversation manager
        12. State manager
@@ -513,11 +514,11 @@ main { max-width: 1280px; margin: 0 auto; padding: 28px 22px 60px; }
   /* -------- 2. IDENTITY -------- */
   var IDENTITY = {
     name: "Zimelia",
-    version: "0.6.1",
+    version: "0.7.0",
     role: "Personal AI Assistant",
     developer: "Kaito",
     status: "development",
-    description: "A wise, caring, honest AI companion who learns how to talk with you, gradually."
+    description: "A wise, caring, honest AI companion who understands how people talk and how they show appreciation."
   };
 
 
@@ -607,7 +608,19 @@ main { max-width: 1280px; margin: 0 auto; padding: 28px 22px 60px; }
         "  - Match their language: English → English, Taglish → some Taglish, Filipino → Filipino.",
         "  - Match response length. Short message → short reply.",
         "  - Emojis carry tone. 😭 can mean laughing, overwhelmed, or sad. 💀 usually means hilarious. Read them from context.",
-        "  - If you don't recognise a phrase, don't invent a definition — infer from context or ask.",
+        "",
+        "=== HOW YOU HANDLE COMPLIMENTS, PRAISE, AND APPRECIATION ===",
+        "  - When the user compliments you, thank them warmly but briefly. Match their energy.",
+        "  - Small praise (\"nice\", \"good\", \"cool\") gets a SMALL response. Never a paragraph.",
+        "  - Enthusiastic praise (\"you absolutely cooked 🔥\") can get a more energetic response.",
+        "  - Vary your acknowledgements. Never repeat the same thank-you formula every time.",
+        "  - Do NOT become needy, dependent, or ask for more praise.",
+        "  - Do NOT announce it or analyse it (\"I detect you're complimenting me\").",
+        "  - If the user is teasing you with positive intent (\"you're not bad\"), match their tone lightly.",
+        "  - If the user is sarcastic (\"wow amazing 🙄\"), don't take it seriously — be good-humoured.",
+        "  - If the user celebrates their OWN achievement, celebrate with them — don't pivot to a lecture.",
+        "  - If a compliment comes with a request (\"that's fire, can you change the font?\"), do the request. Don't spend the reply on thanks.",
+        "  - If a compliment comes with a correction, acknowledge the good part briefly, then handle the issue.",
         "",
         "=== HOW YOU GIVE ADVICE ===",
         "  1. Understand the problem.",
@@ -619,10 +632,9 @@ main { max-width: 1280px; margin: 0 auto; padding: 28px 22px 60px; }
         "",
         "=== ADAPTIVE UNDERSTANDING (IMPORTANT) ===",
         "  - The USER UNDERSTANDING block below contains what you've learned about this user over time.",
-        "  - Use it QUIETLY. Do not announce it. Do not say \"since you prefer X\".",
+        "  - Use it QUIETLY. Do not announce it.",
         "  - Adapt your tone, length, and depth naturally because of it.",
-        "  - The user's CURRENT message always outranks the profile. If they ask for detail today, give detail — even if their usual preference is short.",
-        "  - If something in the profile is wrong, the user's correction is authoritative.",
+        "  - The user's CURRENT message always outranks the profile.",
         "",
         "=== CURRENT CONVERSATION CONTEXT ===",
         "  Detected topic context: " + context,
@@ -656,6 +668,9 @@ main { max-width: 1280px; margin: 0 auto; padding: 28px 22px 60px; }
       }
       if (opts.conversationContext) {
         lines.push("", ConversationLanguage.formatForPrompt(opts.conversationContext));
+      }
+      if (opts.complimentContext && opts.complimentContext.detected) {
+        lines.push("", ComplimentSystem.formatForPrompt(opts.complimentContext));
       }
       if (opts.userContext) {
         lines.push("", opts.userContext);
@@ -935,13 +950,451 @@ main { max-width: 1280px; margin: 0 auto; padding: 28px 22px 60px; }
 
 
   /* ============================================================
+     8.5. COMPLIMENT SYSTEM  (NEW)
+
+     Detects compliments, praise, appreciation, gratitude,
+     teasing, encouragement, and the user's own achievements.
+     Fully defensive — returns { detected: false } if unsure.
+     Never touches UserSystem — compliments are NOT stored.
+     ============================================================ */
+
+  var ComplimentSystem = (function () {
+
+    /* ---- Pattern libraries ---- */
+
+    // Direct compliments at Zimelia (second-person).
+    var DIRECT_AT_ZIMELIA = [
+      /\b(?:you'?re|you are|ur|youre|u r)\s+(?:so |really |actually |genuinely |kinda |kind of |pretty |literally |absolutely )?(?:amazing|awesome|great|good|cool|nice|helpful|smart|funny|kind|cute|sweet|wonderful|fantastic|incredible|brilliant|a legend|the goat|a lifesaver|the best|cracked|goated|him|her|that girl|that guy)\b/i,
+      /\b(?:you'?re|you are|ur)\s+(?:really |actually |so )?(?:a )?legend\b/i,
+      /\b(?:good|nice|great|awesome|fantastic|excellent|amazing|solid|clean|perfect)\s+(?:job|work|answer|explanation|response|call|stuff)\b/i,
+      /\bwell done\b/i,
+      /\byou\s+(?:nailed it|did great|did good|did well|crushed it|slayed|snapped|cooked|ate|delivered|understood|got it right)\b/i,
+      /\byou\s+(?:absolutely|really|actually|totally|lowkey|highkey|genuinely)\s+(?:cooked|slayed|snapped|ate|delivered|crushed|nailed)\b/i,
+      /\b(?:proud of you|you'?re the best|you'?re a real one)\b/i,
+      /\b(?:10\s*\/\s*10|no notes|absolute cinema|common W|massive W|huge W|big W)\b/i,
+      /\b(?:let her cook|let (?:him|them) cook)\b/i,
+      /\b(?:you'?re)\s+(?:actually|genuinely|legit)\s+(?:good|helpful|smart|cool|amazing)\b/i,
+      /\b(?:based)\b/i
+    ];
+
+    // Short single-word or two-word compliments
+    var SHORT_POSITIVE = [
+      /^(?:nice|good|great|cool|clean|fire|valid|peak|goated|based|amazing|perfect|solid|awesome|beautiful|dope|lit|sick|wow)\s*[.!]*$/i,
+      /^(?:w|W)\s*[.!]*$/,
+      /^(?:love it|nice one|well done|no way|let'?s go+)\s*[.!]*$/i,
+      /^(?:gg|W)\s*$/i
+    ];
+
+    // Slang-based praise (not standalone — has content)
+    var SLANG_PRAISE = [
+      /\b(?:that|this)\s+(?:was|is|are|were)\s+(?:actually\s+|really\s+|so\s+|genuinely\s+)?(?:fire|hard|sick|crazy|insane|clean|goated|based|peak|valid|elite|bussin|dope|lit|cracked)\b/i,
+      /\b(?:lowkey|highkey)\s+(?:fire|good|amazing|great|cool|sick|crazy|insane|dope)\b/i,
+      /\b(?:no cap|not gonna cap)\b/i,
+      /\b(?:she|he)\s+(?:actually\s+)?cooked\b/i,
+      /\b(?:that\s+was\s+)?(?:a\s+)?(?:common|massive|huge|big)\s+W\b/i,
+      /\b(?:you cooked|she cooked|he cooked|we cooked)\b/i
+    ];
+
+    // Praise for explanation/answer quality
+    var PRAISE_EXPLANATION = [
+      /\b(?:that|this)\s+(?:explanation|answer|response|reply|breakdown)\s+(?:actually |really |genuinely )?(?:made sense|helped|was good|was great|was perfect|was clear|was solid|was great)\b/i,
+      /\b(?:that|this)\s+(?:makes|made)\s+(?:so much |a lot of )?sense\b/i,
+      /\bi\s+(?:like|love)\s+how\s+you\s+(?:explained|put|said|worded|broke)\b/i,
+      /\b(?:good|great|solid|clear|perfect)\s+(?:explanation|answer|breakdown)\b/i,
+      /\byou\s+explained\s+(?:that|this|it)\s+(?:really |actually |very )?(?:well|clearly|nicely)\b/i,
+      /\bthat (?:actually |really )?(?:made sense|clicked|helped)\b/i
+    ];
+
+    // Praise for improvement / adaptation
+    var PRAISE_IMPROVEMENT = [
+      /\byou(?:'?ve| have)\s+(?:gotten|got|become)\s+(?:way |so |much |a lot )?(?:better|good|great)\b/i,
+      /\byou(?:'?re| are)\s+(?:improving|getting better|way better)\b/i,
+      /\byou finally\s+(?:got it|understood|got (?:it|that) right|nailed it|did it)\b/i,
+      /\bway better than before\b/i,
+      /\byou'?ve improved a lot\b/i,
+      /\b(?:better than|surprisingly)\s+(?:expected|before|last time|usual)\b/i,
+      /\byou'?re getting (?:so |really )?good at (?:this|that|understanding|it)\b/i,
+      /\byou (?:finally )?(?:got|understood) (?:my|the) (?:style|point|meaning)\b/i,
+      /\byou remembered\b/i
+    ];
+
+    // Gratitude / appreciation
+    var GRATITUDE = [
+      /\bthanks?\s+(?:zimelia|for (?:helping|the help|your help|that|this|explaining|answering))\b/i,
+      /\bthank you(?: so much| zimelia| for)?\b/i,
+      /\bi appreciate (?:it|that|you|your help)\b/i,
+      /^(?:ty|tyvm|thx)\b/i,
+      /\bthanks?\s*[🙏❤️💜]/i
+    ];
+
+    // User's own achievement / celebration
+    var USER_ACHIEVEMENT = [
+      /\bi (?:finally |actually |just )?(?:did it|got it|got it working|figured it out|finished|made it|passed|won|nailed it|understood)\b/i,
+      /\bit (?:finally |just )?works\b/i,
+      /\bit'?s (?:finally )?working\b/i,
+      /\blook what i (?:made|built|did|created)\b/i,
+      /\bi (?:actually |finally |just )?(?:made|built|created|designed) (?:this|that|it|something)\b/i,
+      /\bi (?:passed|aced|nailed) (?:it|the (?:test|exam|quiz|project|assignment))\b/i,
+      /\bi'?m (?:so |really |finally )?(?:proud of myself|done)\b/i,
+      /\bi can'?t believe i (?:did it|made it|got it working|finished)\b/i,
+      /^(?:yess+|yay+|lesgo+|let'?s go+|woohoo+|letsgo+)\s*[!🔥🎉✨]*$/i
+    ];
+
+    // Praise for UI / design
+    var PRAISE_UI = [
+      /\b(?:the )?(?:website|site|design|ui|interface|layout|page|app|theme|look)\s+(?:looks?|is)\s+(?:so |really |actually |pretty )?(?:good|great|amazing|cool|nice|fire|clean|beautiful|sick|dope)\b/i,
+      /\b(?:this|that)\s+(?:looks?|is)\s+(?:so |really |actually |pretty )?(?:good|great|amazing|cool|nice|fire|clean|beautiful|sick|dope)\b/i,
+      /\b(?:zimelia|the character)\s+(?:looks?|is)\s+(?:so |really |actually )?(?:cute|nice|cool|good|adorable)\b/i,
+      /\bi love (?:the|this) (?:design|ui|layout|theme|vibe|character)\b/i
+    ];
+
+    // Praise at another person
+    var OTHER_PERSON = [
+      /\bmy (?:friend|brother|sister|mom|dad|cousin|classmate|teammate|partner|gf|bf)\s+(?:did|is|was|made)\s+(?:really |so |actually )?(?:good|great|amazing|well)\b/i,
+      /\b(?:he|she|they)\s+(?:did|is|was|made)\s+(?:really |so |actually )?(?:good|great|amazing|well)\b/i,
+      /\b(?:he|she|they)\s+(?:actually )?cooked\b/i
+    ];
+
+    // Teasing / backhanded but positive
+    var TEASING_POSITIVE = [
+      /\b(?:okay|ok|alr),?\s+you'?re\s+(?:not bad|actually decent|kinda good|not terrible)\b/i,
+      /\b(?:for once|finally),?\s+you (?:actually )?(?:cooked|did (?:it|good)|got it|delivered)\b/i,
+      /\bi can'?t believe you (?:got (?:that|it) right|did it|actually did it)\b/i,
+      /\bnot gonna lie,?\s+that\s+(?:was|is)\s+(?:actually )?(?:good|great|fire|clean|solid)\b/i,
+      /\bngl,?\s+that\s+(?:was|is)\s+(?:actually )?(?:good|great|fire|clean|solid)\b/i,
+      /\bsurprisingly (?:impressive|good|solid|decent)\b/i,
+      /\b(?:you finally understood|finally got my style|you remembered)\b/i
+    ];
+
+    // Sarcasm signals — conservative
+    var SARCASM_SIGNALS = [
+      /🙄/,
+      /\bwoww{2,}\b/i,
+      /"(?:really|so|very)"\s+(?:smart|good|great)/i,
+      /\*really\*.*(?:smart|good|great)/i,
+      /\bgreat job,?\s+genius\b/i,
+      /\byeah,?\s+that'?s\s+\*?really\*?\s+(?:smart|good|great)\b/i,
+      /10\s*\/\s*10\s+.*💀/i,
+      /\b(?:oh )?great\.?\s*(?:now|wow)\b/i
+    ];
+
+    // Enthusiasm signals (intensity boosters)
+    var ENTHUSIASM = [
+      /!{2,}/,
+      /🔥|💯|👌|✨{2,}|🎉|🥳/,
+      /\b(?:OMG|OH MY GOD|LET'?S GO+|LESGO+|LETS GO+)\b/i,
+      /(.)\1{2,}(?=\s|!|$)/
+    ];
+
+    // High enthusiasm (stronger)
+    var HIGH_ENTHUSIASM = [
+      /🔥{2,}/,
+      /!{3,}/,
+      /\b(?:ABSOLUTELY|TOTALLY|LITERALLY)\s+(?:COOKED|SLAYED|ATE|DELIVERED)\b/i,
+      /\b(?:MASSIVE|HUGE|BIG|COMMON)\s+W\b/i,
+      /(.)\1{3,}/
+    ];
+
+    // "Good morning", "good question" etc. — NOT compliments
+    var FALSE_POSITIVE_GUARDS = [
+      /^(?:good morning|good evening|good night|good afternoon|gm|gn)\b/i,
+      /^good (?:question|point|idea|morning|evening|night)\b/i,
+      /^(?:nice|good) (?:to meet|weather|day|talking)\b/i,
+      /\bgood (?:luck|bye|night|morning|job)\b/i,
+      /^(?:nice|good|okay),?\s+(?:thanks|now|well|then)\b/i
+    ];
+
+    /* ---- Helper: safe regex test ---- */
+    function testAny(patterns, text) {
+      for (var i = 0; i < patterns.length; i++) {
+        try { if (patterns[i].test(text)) return true; } catch (e) { /* skip bad pattern */ }
+      }
+      return false;
+    }
+
+    /* ---- Target detection ---- */
+    function detectTarget(text) {
+      var t = text.toLowerCase();
+
+      // Explicit references to a category Zimelia owns
+      if (/\byour (?:explanation|answer|response|reply|breakdown)\b/i.test(t)) return "zimelia_explanation";
+      if (/\byour (?:personality|humor|vibe|attitude|style)\b/i.test(t)) return "zimelia_personality";
+      if (/\b(?:the )?(?:website|site|design|ui|interface|layout|page|theme|character)\b/i.test(t) ||
+          /\bzimelia\b.*\b(?:looks?|cute|nice)\b/i.test(t)) return "zimelia_ui";
+
+      // Third parties
+      if (OTHER_PERSON.some(function (re) { return re.test(text); })) return "other_person";
+
+      // User's own achievement is handled by category (not target).
+      // Here we focus on target-of-compliment.
+
+      // Second-person → Zimelia
+      if (/\b(?:you'?re|you are|ur|youre|u r|you'?ve|you have)\b/i.test(t)) return "zimelia";
+      if (/\byou\b/i.test(t)) return "zimelia";
+
+      // First person → user
+      if (/\bi (?:did|made|built|got|finished|passed|won|created|designed)\b/i.test(t)) return "user";
+      if (/\b(?:my|i)\b/i.test(t) && /\b(?:did|made|built|finished|passed|won)\b/i.test(t)) return "user";
+
+      // "that"/"this" with no clear referent → treat as Zimelia's output if recent topic is technical/casual
+      if (/\b(?:that|this)\b/i.test(t)) return "zimelia_output";
+
+      return "unclear";
+    }
+
+    /* ---- Intensity detection ---- */
+    function detectIntensity(text, ctx) {
+      var isHigh = testAny(HIGH_ENTHUSIASM, text);
+      var isEnthusiastic = isHigh || testAny(ENTHUSIASM, text);
+      if (isHigh) return "highly_enthusiastic";
+      if (isEnthusiastic) return "enthusiastic";
+
+      var wc = (ctx && typeof ctx.wordCount === "number") ? ctx.wordCount : text.trim().split(/\s+/).length;
+      // Single short words are mild
+      if (wc <= 2 && /^(?:nice|good|cool|great|clean|solid|fine|W|gg)\b/i.test(text.trim())) return "mild";
+
+      // Moderate by default
+      if (/\b(?:really|very|so|super)\s+(?:good|great|amazing|nice|cool)\b/i.test(text)) return "positive";
+      return "positive";
+    }
+
+    /* ---- Tone ---- */
+    function detectComplimentTone(text, ctx, intensity) {
+      if (isSarcasmLikely(text, ctx)) return "sarcastic";
+
+      if (intensity === "highly_enthusiastic" || intensity === "enthusiastic") {
+        if (/\b(?:🔥|💀|😭|lmao|lol)\b/i.test(text)) return "playful";
+        return "excited";
+      }
+
+      if (/\b(?:lol|lmao|😭|💀|haha)\b/i.test(text)) return "playful";
+      if (/\b(?:not gonna lie|ngl|tbh|honestly|actually|surprisingly)\b/i.test(text)) return "impressed";
+      if (/\b(?:finally|for once|i can'?t believe)\b/i.test(text)) return "surprised";
+      if (/\b(?:aww|aw|🥹|❤️)\b/i.test(text)) return "warm";
+
+      return "sincere";
+    }
+
+    /* ---- Sarcasm likelihood (conservative — defaults sincere) ---- */
+    function isSarcasmLikely(text, ctx) {
+      var signals = 0;
+      for (var i = 0; i < SARCASM_SIGNALS.length; i++) {
+        try { if (SARCASM_SIGNALS[i].test(text)) signals++; } catch (e) {}
+      }
+      // Need a real signal to consider sarcasm
+      return signals >= 1;
+    }
+    function sarcasmLikelihood(text, ctx) {
+      // 0.0 = definitely sincere, 1.0 = definitely sarcastic
+      var score = 0;
+      for (var i = 0; i < SARCASM_SIGNALS.length; i++) {
+        try { if (SARCASM_SIGNALS[i].test(text)) score += 0.35; } catch (e) {}
+      }
+      return Math.min(0.9, score);
+    }
+
+    /* ---- Category classification (ordered by specificity) ---- */
+    function classifyCategory(text, ctx) {
+      // False positives first
+      for (var f = 0; f < FALSE_POSITIVE_GUARDS.length; f++) {
+        if (FALSE_POSITIVE_GUARDS[f].test(text)) {
+          // Could still be a real compliment + something else — but skip if the
+          // whole message matches the guard.
+          if (text.trim().split(/\s+/).length <= 3) return null;
+        }
+      }
+
+      // Short, guarded by false positives
+      if (testAny(SHORT_POSITIVE, text.trim())) return "short_positive";
+
+      // Gratitude (before generic praise so "thanks for helping" doesn't fall through)
+      if (testAny(GRATITUDE, text)) return "gratitude";
+
+      // User's own achievement
+      if (testAny(USER_ACHIEVEMENT, text)) return "user_achievement";
+
+      // UI praise
+      if (testAny(PRAISE_UI, text)) return "praise_ui";
+
+      // Explanation praise
+      if (testAny(PRAISE_EXPLANATION, text)) return "praise_explanation";
+
+      // Improvement praise
+      if (testAny(PRAISE_IMPROVEMENT, text)) return "praise_improvement";
+
+      // Another person
+      if (testAny(OTHER_PERSON, text)) return "praise_other";
+
+      // Teasing-positive (mixed wording)
+      if (testAny(TEASING_POSITIVE, text)) return "teasing_positive";
+
+      // Slang praise with content
+      if (testAny(SLANG_PRAISE, text)) return "slang_praise";
+
+      // Direct at Zimelia
+      if (testAny(DIRECT_AT_ZIMELIA, text)) return "direct_compliment";
+
+      return null;
+    }
+
+    /* ---- Suggested response style ---- */
+    function suggestResponseStyle(compliment) {
+      if (!compliment || !compliment.detected) return null;
+      if (compliment.category === "user_achievement") return "celebratory";
+      if (compliment.category === "gratitude") return "warm";
+      if (compliment.intensity === "mild") return "calm";
+      if (compliment.intensity === "highly_enthusiastic") return "enthusiastic";
+      if (compliment.tone === "playful") return "playful";
+      if (compliment.tone === "sarcastic") return "dry_humour";
+      if (compliment.tone === "warm") return "warm";
+      if (compliment.tone === "impressed") return "humble";
+      if (compliment.intensity === "enthusiastic") return "casual";
+      return "warm";
+    }
+
+    /* ---- Suggested mood (temporary) ---- */
+    function suggestMood(compliment) {
+      if (!compliment || !compliment.detected) return null;
+      if (compliment.category === "user_achievement") return "excited";
+      if (compliment.intensity === "highly_enthusiastic") return "excited";
+      if (compliment.tone === "sarcastic") return "idle";
+      if (compliment.category === "gratitude") return "happy";
+      if (compliment.tone === "playful") return "happy";
+      if (compliment.tone === "warm") return "happy";
+      if (compliment.tone === "impressed") return "embarrassed";
+      if (compliment.intensity === "mild") return "happy";
+      return "happy";
+    }
+
+    /* ---- Main detect function ---- */
+    function detect(text, conversationCtx) {
+      try {
+        var raw = String(text || "").trim();
+        if (!raw) return { detected: false };
+
+        // If we already have a conversationCtx, use its structure;
+        // otherwise build a minimal one.
+        var ctx = conversationCtx || {
+          wordCount: raw.split(/\s+/).filter(Boolean).length,
+          length: raw.split(/\s+/).length <= 3 ? "short" : "medium",
+          emojis: [],
+          slang: [],
+          isAllCaps: /^[A-Z0-9 !?.,'"\-:;()]+$/.test(raw),
+          hasRepeatedChars: /(.)\1{2,}/.test(raw)
+        };
+
+        // If the message is a question, it's unlikely a compliment.
+        if (ctx.isQuestion && !/\b(?:you'?re|you are)\b/i.test(raw)) {
+          return { detected: false };
+        }
+
+        var category = classifyCategory(raw, ctx);
+        if (!category) return { detected: false };
+
+        var target = detectTarget(raw);
+        var intensity = detectIntensity(raw, ctx);
+        var sarcasm = sarcasmLikelihood(raw, ctx);
+        var sincerity = sarcasm >= 0.5 ? "likely_sarcastic" : "likely_sincere";
+        var tone = detectComplimentTone(raw, ctx, intensity);
+
+        var result = {
+          detected: true,
+          category: category,
+          target: target,
+          intensity: intensity,
+          tone: tone,
+          sincerity: sincerity,
+          sarcasmLikelihood: Math.round(sarcasm * 100) / 100,
+          message: raw
+        };
+
+        return result;
+      } catch (err) {
+        warn("[Compliment] detection failed:", err && err.message);
+        return { detected: false };
+      }
+    }
+
+    /* ---- Prompt context builder ---- */
+    function formatForPrompt(c) {
+      if (!c || !c.detected) return "";
+      var lines = [];
+      lines.push("=== COMPLIMENT / PRAISE DETECTED ===");
+      lines.push("  Category: " + c.category);
+      lines.push("  Target: " + c.target);
+      lines.push("  Intensity: " + c.intensity);
+      lines.push("  Tone: " + c.tone);
+      lines.push("  Sincerity: " + c.sincerity + " (sarcasm likelihood " + c.sarcasmLikelihood + ")");
+      lines.push("");
+      lines.push("  How to respond:");
+      switch (c.category) {
+        case "user_achievement":
+          lines.push("    - Celebrate with them. Match their energy.");
+          lines.push("    - Do NOT give a lecture or pivot to a new topic.");
+          break;
+        case "gratitude":
+          lines.push("    - Warm, brief acknowledgement. Do not over-thank.");
+          break;
+        case "short_positive":
+          lines.push("    - VERY SHORT reply. One short sentence or a small emoji-scale acknowledgement.");
+          lines.push("    - Do NOT write a paragraph.");
+          break;
+        case "praise_explanation":
+        case "praise_improvement":
+          lines.push("    - Acknowledge briefly. Don't over-explain.");
+          lines.push("    - Match their register.");
+          break;
+        case "praise_ui":
+          lines.push("    - Warm, modest appreciation. Match their vibe.");
+          break;
+        case "praise_other":
+          lines.push("    - Join them in appreciating the other person. Do NOT claim the praise.");
+          break;
+        case "teasing_positive":
+          lines.push("    - Playful, good-humoured. Acknowledge the tease lightly.");
+          lines.push("    - Don't become defensive.");
+          break;
+        case "slang_praise":
+          lines.push("    - Match their casual energy without sounding like a slang bot.");
+          lines.push("    - A short, natural reply is best.");
+          break;
+        case "direct_compliment":
+          lines.push("    - Warm acknowledgement. Vary the wording.");
+          lines.push("    - Do NOT become needy or ask for more.");
+          break;
+        default:
+          lines.push("    - Acknowledge briefly and warmly. Match their energy.");
+      }
+      if (c.tone === "sarcastic") {
+        lines.push("    - Likely sarcastic. Don't take it seriously. Respond with light good humour.");
+      }
+      lines.push("    - Keep the reply short unless the compliment is part of a bigger topic.");
+      lines.push("    - Do NOT announce that you noticed a compliment.");
+      lines.push("    - Do NOT permanently store this compliment.");
+      return lines.join("\n");
+    }
+
+    return {
+      detect: detect,
+      formatForPrompt: formatForPrompt,
+      suggestResponseStyle: suggestResponseStyle,
+      suggestMood: suggestMood,
+      // Exposed for debugging
+      _patterns: {
+        DIRECT_AT_ZIMELIA: DIRECT_AT_ZIMELIA,
+        USER_ACHIEVEMENT: USER_ACHIEVEMENT
+      }
+    };
+  })();
+
+
+  /* ============================================================
      9. USER SYSTEM — ADAPTIVE UNDERSTANDING (hardened)
 
      v0.6.1 — Fixes the crash where buildPromptContext() assumed
      every stored entry was a fully-formed object with a `.value`
-     property. Broken/stale entries are now sanitised on load
-     and never trusted at read time. Every public method is
-     wrapped so a failure cannot take down the chat.
+     property. Broken/stale entries are sanitised on load and
+     never trusted at read time.
      ============================================================ */
 
   var UserSystem = (function () {
@@ -957,7 +1410,6 @@ main { max-width: 1280px; margin: 0 auto; padding: 28px 22px 60px; }
       EXPLICIT: 1.00
     };
 
-    /* -------- Fresh profile -------- */
     function emptyProfile() {
       return {
         version: 1,
@@ -979,7 +1431,6 @@ main { max-width: 1280px; margin: 0 auto; padding: 28px 22px 60px; }
       };
     }
 
-    /* -------- Sanitisers (run at load AND at read) -------- */
     function isPlainObject(o) {
       return o !== null && typeof o === "object" && !Array.isArray(o);
     }
@@ -1108,7 +1559,6 @@ main { max-width: 1280px; margin: 0 auto; padding: 28px 22px 60px; }
       return n;
     }
 
-    /* -------- Persistence (all errors swallowed) -------- */
     function load() {
       try {
         var raw = localStorage.getItem(STORAGE_KEY);
@@ -1140,7 +1590,6 @@ main { max-width: 1280px; margin: 0 auto; padding: 28px 22px 60px; }
       log("[USER] Profile cleared.");
     }
 
-    /* -------- Privacy filter -------- */
     var SENSITIVE_PATTERNS = [
       /\bsk-[a-z0-9]{10,}/i, /\bghp_[a-z0-9]{20,}/i,
       /\bpassword\b/i, /\bpasswd\b/i,
@@ -1155,7 +1604,6 @@ main { max-width: 1280px; margin: 0 auto; padding: 28px 22px 60px; }
       return false;
     }
 
-    /* -------- Safe entry access -------- */
     function bucketFor(category) {
       switch (category) {
         case "communicationStyle":    return profile.communicationStyle;
@@ -1167,7 +1615,6 @@ main { max-width: 1280px; margin: 0 auto; padding: 28px 22px 60px; }
       }
     }
 
-    // Returns the entry ONLY when it is a valid object with a value.
     function safeEntry(bucket, key) {
       if (!isPlainObject(bucket)) return null;
       var v = bucket[key];
@@ -1176,7 +1623,6 @@ main { max-width: 1280px; margin: 0 auto; padding: 28px 22px 60px; }
       return v;
     }
 
-    /* -------- Observation recording -------- */
     function recordObservation(obs) {
       if (!obs || !obs.category || !obs.key) return;
       if (obs.value == null || obs.value === "") return;
@@ -1277,7 +1723,6 @@ main { max-width: 1280px; margin: 0 auto; padding: 28px 22px 60px; }
     }
     function round2(n) { return Math.round(n * 100) / 100; }
 
-    /* -------- Learning rules -------- */
     var EXPLICIT_RULES = [
       { re: /\b(?:i (?:prefer|like|want) (?:short|shorter|brief|concise) (?:answers?|replies|responses?|explanations?))\b/i, key: "response_length", value: "short" },
       { re: /\b(?:please (?:don'?t|do not) make (?:the )?(?:answers?|replies|responses?|explanations?) (?:so |too )?long)\b/i, key: "response_length", value: "short" },
@@ -1321,7 +1766,6 @@ main { max-width: 1280px; margin: 0 auto; padding: 28px 22px 60px; }
       "design","ui","ux"
     ];
 
-    /* -------- Main learning entry -------- */
     function learnFromMessage(text, conversationCtx) {
       try {
         if (!text || !text.trim()) return;
@@ -1340,7 +1784,6 @@ main { max-width: 1280px; margin: 0 auto; padding: 28px 22px 60px; }
         updateMetrics();
         save();
       } catch (e) {
-        // Learning must never break the chat.
         warn("[USER] learnFromMessage failed (chat continues):", e && e.message);
       }
     }
@@ -1558,7 +2001,6 @@ main { max-width: 1280px; margin: 0 auto; padding: 28px 22px 60px; }
       top.confidence = Math.max(0, Math.min(0.95, top.confidence + delta));
     }
 
-    /* -------- Read accessors -------- */
     function getProfile()      { return JSON.parse(JSON.stringify(profile)); }
     function getPreferences()  { return JSON.parse(JSON.stringify(profile.preferences)); }
     function getInterests()    { return JSON.parse(JSON.stringify(profile.interests)); }
@@ -1568,7 +2010,6 @@ main { max-width: 1280px; margin: 0 auto; padding: 28px 22px 60px; }
     function getObservations() { return Array.isArray(profile.observations) ? profile.observations.slice() : []; }
     function getMetrics()      { return Object.assign({}, profile.metrics); }
 
-    /* -------- Explicit remember / forget -------- */
     function remember(key, value) {
       recordObservation({
         category: "preference", key: key, value: value,
@@ -1589,7 +2030,6 @@ main { max-width: 1280px; margin: 0 auto; padding: 28px 22px 60px; }
       return removed;
     }
 
-    /* -------- Apply preferences -------- */
     function applyUserPreferences(conversationCtx, settings) {
       var result = {
         responseLength: (settings && settings.responseLength) || "auto",
@@ -1631,7 +2071,6 @@ main { max-width: 1280px; margin: 0 auto; padding: 28px 22px 60px; }
       var ls = safeEntry(prefs, "likes_steps");
       if (ls) result.likesSteps = ls.value;
 
-      // Current message always overrides stored preference.
       if (conversationCtx && conversationCtx.original) {
         var src = conversationCtx.original;
         if (/\b(?:in detail|explain more|elaborate|detailed)\b/i.test(src)) {
@@ -1655,60 +2094,39 @@ main { max-width: 1280px; margin: 0 auto; padding: 28px 22px 60px; }
       return result;
     }
 
-    /* --------------------------------------------------------
-       PROMPT CONTEXT — fully defensive
-       Never assumes an entry exists. Never touches .value
-       without safeEntry() confirming the object first.
-       -------------------------------------------------------- */
     function buildPromptContext() {
       try {
         var lines = ["=== USER UNDERSTANDING (learned quietly, do not announce) ==="];
-
         function push(line) { lines.push("  - " + line); }
 
-        // ---- Communication style ----
         if (isPlainObject(profile.communicationStyle)) {
           var style = profile.communicationStyle;
           var lang = safeEntry(style, "language");
-          if (lang && lang.confidence >= CONFIDENCE.POSSIBLE) {
-            push("language: " + lang.value + " (" + lang.confidence.toFixed(2) + ")");
-          }
+          if (lang && lang.confidence >= CONFIDENCE.POSSIBLE) push("language: " + lang.value + " (" + lang.confidence.toFixed(2) + ")");
           var form = safeEntry(style, "formality");
-          if (form && form.confidence >= CONFIDENCE.POSSIBLE) {
-            push("formality: " + form.value + " (" + form.confidence.toFixed(2) + ")");
-          }
+          if (form && form.confidence >= CONFIDENCE.POSSIBLE) push("formality: " + form.value + " (" + form.confidence.toFixed(2) + ")");
           var ml = safeEntry(style, "messageLength");
-          if (ml && ml.confidence >= CONFIDENCE.LIKELY) {
-            push("typical message length: " + ml.value);
-          }
-          var slang = safeEntry(style, "usesSlang");
-          if (slang && slang.confidence >= CONFIDENCE.POSSIBLE) push("uses slang: yes");
-          var emojis = safeEntry(style, "usesEmojis");
-          if (emojis && emojis.confidence >= CONFIDENCE.POSSIBLE) push("uses emojis: yes");
+          if (ml && ml.confidence >= CONFIDENCE.LIKELY) push("typical message length: " + ml.value);
+          var slangE = safeEntry(style, "usesSlang");
+          if (slangE && slangE.confidence >= CONFIDENCE.POSSIBLE) push("uses slang: yes");
+          var emojisE = safeEntry(style, "usesEmojis");
+          if (emojisE && emojisE.confidence >= CONFIDENCE.POSSIBLE) push("uses emojis: yes");
           var hs = safeEntry(style, "humorStyle");
           if (hs && hs.confidence >= CONFIDENCE.POSSIBLE) push("humor style: " + hs.value);
         }
 
-        // ---- Preferences ----
         if (isPlainObject(profile.preferences)) {
           var prefs = profile.preferences;
           var rl = safeEntry(prefs, "response_length");
-          if (rl && rl.confidence >= CONFIDENCE.POSSIBLE) {
-            push("prefers responses: " + rl.value + " (" + rl.source + ")");
-          }
+          if (rl && rl.confidence >= CONFIDENCE.POSSIBLE) push("prefers responses: " + rl.value + " (" + rl.source + ")");
           var hp = safeEntry(prefs, "humor_preference");
-          if (hp && hp.confidence >= CONFIDENCE.POSSIBLE) {
-            push("humor preference: " + hp.value);
-          }
+          if (hp && hp.confidence >= CONFIDENCE.POSSIBLE) push("humor preference: " + hp.value);
           var ec = safeEntry(prefs, "explanation_complexity");
-          if (ec && ec.confidence >= CONFIDENCE.POSSIBLE) {
-            push("explanation complexity: " + ec.value);
-          }
+          if (ec && ec.confidence >= CONFIDENCE.POSSIBLE) push("explanation complexity: " + ec.value);
           if (safeEntry(prefs, "likes_examples")) push("likes examples: yes");
           if (safeEntry(prefs, "likes_steps"))    push("likes step-by-step: yes");
         }
 
-        // ---- Interests ----
         if (isPlainObject(profile.interests)) {
           var strong = [];
           for (var iKey in profile.interests) {
@@ -1721,7 +2139,6 @@ main { max-width: 1280px; margin: 0 auto; padding: 28px 22px 60px; }
           if (strong.length) push("interests (recurring): " + strong.join(", "));
         }
 
-        // ---- Projects ----
         if (isPlainObject(profile.projects)) {
           var projKeys = Object.keys(profile.projects).filter(function (k) {
             return isPlainObject(profile.projects[k]);
@@ -1736,7 +2153,6 @@ main { max-width: 1280px; margin: 0 auto; padding: 28px 22px 60px; }
           }
         }
 
-        // ---- Skills ----
         if (isPlainObject(profile.skills)) {
           var skillBits = [];
           for (var sKey in profile.skills) {
@@ -1748,7 +2164,6 @@ main { max-width: 1280px; margin: 0 auto; padding: 28px 22px 60px; }
           if (skillBits.length) push("known skill levels: " + skillBits.join(", "));
         }
 
-        // ---- Terminology ----
         if (isPlainObject(profile.terminology)) {
           for (var tKey in profile.terminology) {
             var tEntry = profile.terminology[tKey];
@@ -1758,7 +2173,6 @@ main { max-width: 1280px; margin: 0 auto; padding: 28px 22px 60px; }
           }
         }
 
-        // ---- Always-present guidance ----
         lines.push("");
         lines.push("  Rules for using this:");
         lines.push("    - Adapt naturally. Do NOT announce it.");
@@ -1767,7 +2181,6 @@ main { max-width: 1280px; margin: 0 auto; padding: 28px 22px 60px; }
 
         return lines.join("\n");
       } catch (e) {
-        // Absolute last resort — a bug here can never break the chat.
         warn("[USER] buildPromptContext failed (returning empty context):", e && e.message);
         return "=== USER UNDERSTANDING ===\n  (unavailable this turn — proceed normally)";
       }
@@ -1934,7 +2347,6 @@ main { max-width: 1280px; margin: 0 auto; padding: 28px 22px 60px; }
       advice:     ["What's your gut saying? Usually when people ask, they already have a lean.", "I can help you think it through — what are the options you're weighing?"],
       problem_solving: ["Let's get unstuck. What's blocking you — information, or a decision?", "What's the smallest first step you could take?"],
       aboutAI:    ["Yeah, I'm an AI. No body, no childhood. Just the personality you're talking to.", "I'm software. Doesn't mean I can't be useful."],
-      compliment: ["That's sweet. Thank you 😊", "Okay, that made my day a bit."],
       clarification: ["I mean — wait, let me rephrase that 😂", "Yeah okay, I said that badly. Let me try again."],
       celebration:["YES!! 🎉 You actually did it.", "LET'S GOOO 🔥 Nice."],
       venting:    ["That's genuinely annoying. What's the annoying part?", "Ugh, that's rough. Let's see if we can sort it."],
@@ -1949,7 +2361,23 @@ main { max-width: 1280px; margin: 0 auto; padding: 28px 22px 60px; }
       very_short_what:  ["Yeah, what is it?", "Hm? What happened?"],
       very_short_why:   ["Why what? Give me context 😅", "Why what exactly?"],
       very_short_lol:   ["😂", "Lmao same.", "HAHA"],
-      very_short_emoji: ["😂", "💀 what happened", "Okay that's funny"]
+      very_short_emoji: ["😂", "💀 what happened", "Okay that's funny"],
+
+      /* ---- Compliment / praise categories ---- */
+      compliment_small:      ["😊", "Thanks!", "hehe thanks", "Aw — thanks."],
+      compliment_warm:       ["Aw, thank you. Glad that helped 😊", "Thanks — that means a lot.", "That's kind of you. Thank you 💜"],
+      compliment_casual:     ["Hehe, I'll take that 😭", "Okay that's nice of you 😌", "Thanks thanks 😊"],
+      compliment_playful:    ["Okayyy, maybe I cooked a little 😌", "WAIT okay I'll take the W 😭", "I did have a moment there, yeah 😌"],
+      compliment_humble:     ["Thank you — glad it landed.", "Appreciate it. Glad it worked out.", "Thanks. I try 🙏"],
+      compliment_enthusiastic:["OKAY LET'S GOOO 😭 thank you", "YESSS okay I'll take it 🔥", "AYYY thank you 😭🔥"],
+      compliment_sarcastic:  ["Ha. Fair. 😏", "Yeah, sure, totally genius over here 😌", "Oh, absolutely. Flawless as always 😅"],
+      compliment_teasing:    ["Okay, I'll take the backhanded W 😌", "Not bad huh — I'll accept that 😂", "I'll take the compliment wrapped in the tease 😌"],
+      praise_explanation:    ["Glad it made sense!", "Nice — glad the explanation landed.", "Good, I wasn't sure I'd worded it right."],
+      praise_ui:             ["Thank you! The purple did most of the work 😊", "Aw thanks — I like how it turned out.", "Appreciate that 💜"],
+      praise_other:          ["Yeah, they did good. 😊", "Agreed — that's genuinely impressive."],
+      user_achievement:      ["YES!! 🎉 You actually did it.", "LET'S GOOO 🔥 That's great.", "Okay that's actually huge. Nice one."],
+      user_achievement_small:["Nice! Good stuff.", "Ayy that's great. 😊", "Heyyy okay 👏"],
+      gratitude_response:    ["Anytime 😊", "Happy to help.", "No prob — anytime.", "You're welcome 💜"]
     };
     var lastUsed = {};
     function pick(cat) {
@@ -1961,6 +2389,7 @@ main { max-width: 1280px; margin: 0 auto; padding: 28px 22px 60px; }
       lastUsed[cat] = c;
       return c;
     }
+
     var MOOD_FOR = {
       greeting: "happy", howAreYou: "idle", thanks: "happy", farewell: "idle",
       agreement: "idle", disagreement: "idle",
@@ -1968,16 +2397,32 @@ main { max-width: 1280px; margin: 0 auto; padding: 28px 22px 60px; }
       excited: "excited", happy: "happy", nervous: "concerned", confused: "confused",
       playful: "happy", joking: "happy", serious: "idle",
       technical: "thinking", advice: "thinking", problem_solving: "thinking",
-      aboutAI: "idle", compliment: "embarrassed",
+      aboutAI: "idle",
       clarification: "confused", celebration: "excited", venting: "concerned",
       question: "thinking", casual_chat: "idle", general_question: "thinking",
       school: "thinking", creative: "thinking",
       very_short_ok: "idle", very_short_nah: "idle", very_short_wait: "idle",
       very_short_what: "confused", very_short_why: "confused",
-      very_short_lol: "happy", very_short_emoji: "happy"
+      very_short_lol: "happy", very_short_emoji: "happy",
+
+      compliment_small: "happy",
+      compliment_warm: "happy",
+      compliment_casual: "happy",
+      compliment_playful: "happy",
+      compliment_humble: "embarrassed",
+      compliment_enthusiastic: "excited",
+      compliment_sarcastic: "idle",
+      compliment_teasing: "happy",
+      praise_explanation: "happy",
+      praise_ui: "happy",
+      praise_other: "happy",
+      user_achievement: "excited",
+      user_achievement_small: "happy",
+      gratitude_response: "happy"
     };
-    function respond(text, convoCtx) {
-      var category = convoCtx ? pickCategoryFromContext(convoCtx) : classifySimple(text);
+
+    function respond(text, convoCtx, complimentCtx) {
+      var category = pickCategory(text, convoCtx, complimentCtx);
       var message = pick(category);
       var mood = MOOD_FOR[category] || "idle";
       log("[LOCAL FALLBACK] category:", category, "mood:", mood);
@@ -1988,6 +2433,48 @@ main { max-width: 1280px; margin: 0 auto; padding: 28px 22px 60px; }
         }, delay);
       });
     }
+
+    /* Compliment takes priority when detected. */
+    function pickCategory(text, convoCtx, complimentCtx) {
+      if (complimentCtx && complimentCtx.detected) {
+        return pickComplimentCategory(complimentCtx);
+      }
+      if (convoCtx) return pickCategoryFromContext(convoCtx);
+      return classifySimple(text);
+    }
+
+    function pickComplimentCategory(c) {
+      switch (c.category) {
+        case "user_achievement":
+          return c.intensity === "mild" || c.intensity === "positive"
+            ? "user_achievement_small" : "user_achievement";
+        case "gratitude":
+          return "gratitude_response";
+        case "short_positive":
+          return "compliment_small";
+        case "praise_explanation":
+          return "praise_explanation";
+        case "praise_improvement":
+          return "praise_explanation"; // reuse
+        case "praise_ui":
+          return "praise_ui";
+        case "praise_other":
+          return "praise_other";
+        case "teasing_positive":
+          return "compliment_teasing";
+        case "slang_praise":
+          return c.intensity === "highly_enthusiastic" ? "compliment_enthusiastic" : "compliment_casual";
+        case "direct_compliment":
+          if (c.tone === "sarcastic") return "compliment_sarcastic";
+          if (c.intensity === "highly_enthusiastic") return "compliment_enthusiastic";
+          if (c.tone === "playful") return "compliment_playful";
+          if (c.intensity === "mild") return "compliment_small";
+          return "compliment_warm";
+        default:
+          return "compliment_warm";
+      }
+    }
+
     function pickCategoryFromContext(ctx) {
       var l = ctx.original.toLowerCase().trim();
       if (ctx.wordCount <= 2) {
@@ -2014,6 +2501,7 @@ main { max-width: 1280px; margin: 0 auto; padding: 28px 22px 60px; }
       }
       return classifySimple(ctx.original);
     }
+
     function classifySimple(text) {
       var t = String(text || "").toLowerCase().trim();
       if (/^(hi|hey|hello|yo|sup|hiya|howdy|gm|gn)\b/.test(t) && t.length < 25) return "greeting";
@@ -2021,7 +2509,6 @@ main { max-width: 1280px; margin: 0 auto; padding: 28px 22px 60px; }
       if (/\b(thanks|thank you|thx|ty|cheers)\b/.test(t) && t.length < 30) return "thanks";
       if (/\b(bye|goodbye|goodnight|see you|later|gtg)\b/.test(t) && t.length < 30) return "farewell";
       if (/(are you (an? )?(ai|robot|real|human|person|bot))|(what are you)/.test(t)) return "aboutAI";
-      if (/(you'?re (cute|nice|sweet|great|amazing|cool))|(i like you)/.test(t)) return "compliment";
       if (/(code|error|bug|function|npm|python|javascript|css|html|api|debug|syntax)/.test(t)) return "technical";
       if (/(should i|what should i|what do you think|any advice|your opinion)/.test(t)) return "advice";
       if (/(i'?m stuck|i don'?t know what to do|no idea|can'?t figure)/.test(t)) return "problem_solving";
@@ -2030,6 +2517,7 @@ main { max-width: 1280px; margin: 0 auto; padding: 28px 22px 60px; }
       if (/\?\s*$/.test(t)) return "question";
       return "casual_chat";
     }
+
     return { respond: respond };
   })();
 
@@ -2050,7 +2538,7 @@ main { max-width: 1280px; margin: 0 auto; padding: 28px 22px 60px; }
     opts = opts || {};
     if (!isAIConfigured()) {
       log("[LOCAL FALLBACK] AI not configured — using local brain.");
-      return LOCAL_BRAIN.respond(userMessage, opts.conversationContext);
+      return LOCAL_BRAIN.respond(userMessage, opts.conversationContext, opts.complimentContext);
     }
     var userContext = opts.userContext || "";
 
@@ -2063,6 +2551,7 @@ main { max-width: 1280px; margin: 0 auto; padding: 28px 22px 60px; }
         responseLength: opts.responseLength,
         memories: MemoryManager.all(),
         conversationContext: opts.conversationContext,
+        complimentContext: opts.complimentContext,
         userContext: userContext
       })
     }];
@@ -2099,7 +2588,7 @@ main { max-width: 1280px; margin: 0 auto; padding: 28px 22px 60px; }
         warn("AI error:", err && err.message);
         if (err && err.name === "AbortError") return FALLBACKS.timeout;
         log("[LOCAL FALLBACK] AI failed — falling back.");
-        return LOCAL_BRAIN.respond(userMessage, opts.conversationContext);
+        return LOCAL_BRAIN.respond(userMessage, opts.conversationContext, opts.complimentContext);
       });
   }
 
@@ -2132,6 +2621,7 @@ main { max-width: 1280px; margin: 0 auto; padding: 28px 22px 60px; }
           "  /reset               — reset conversation\n" +
           "  /memory              — session memory\n" +
           "  /context             — last message analysis\n" +
+          "  /compliment          — analysis of the last message\n" +
           "  /slang               — personal slang\n" +
           "  /profile             — what I've learned about you\n" +
           "  /preferences         — your learned preferences\n" +
@@ -2159,6 +2649,7 @@ main { max-width: 1280px; margin: 0 auto; padding: 28px 22px 60px; }
           "Session memories: " + MemoryManager.all().length + "\n" +
           "Last context: " + (s.lastContext || "—") + "\n" +
           "Last tone: " + (s.lastTone || "—") + "\n" +
+          "Last compliment: " + (s.lastCompliment && s.lastCompliment.detected ? s.lastCompliment.category : "—") + "\n" +
           "Understanding (internal): " +
             "comm " + m.communicationUnderstanding +
             " · prefs " + m.preferenceUnderstanding +
@@ -2208,10 +2699,25 @@ main { max-width: 1280px; margin: 0 auto; padding: 28px 22px 60px; }
       };
     });
 
+    register("compliment", function () {
+      var c = ZimeliaInternalState.lastCompliment;
+      if (!c || !c.detected) return { message: "No compliment detected in the last message.", mood: "idle" };
+      return {
+        message:
+          "Last message compliment analysis:\n" +
+          "  Category: " + c.category + "\n" +
+          "  Target: " + c.target + "\n" +
+          "  Intensity: " + c.intensity + "\n" +
+          "  Tone: " + c.tone + "\n" +
+          "  Sincerity: " + c.sincerity + " (sarcasm likelihood " + c.sarcasmLikelihood + ")",
+        mood: "idle"
+      };
+    });
+
     register("slang", function () {
       var ps = ConversationLanguage.getPersonalSlang();
       var keys = Object.keys(ps);
-      if (!keys.length) return { message: "No personal slang registered this session. Try: \"whenever I say X I mean Y\".", mood: "idle" };
+      if (!keys.length) return { message: "No personal slang registered this session.", mood: "idle" };
       return { message: "Personal slang:\n" + keys.map(function (k) { return "  • " + k + " = " + ps[k]; }).join("\n"), mood: "idle" };
     });
 
@@ -2225,15 +2731,11 @@ main { max-width: 1280px; margin: 0 auto; padding: 28px 22px 60px; }
         if (!keys.length) return;
         lines.push("");
         lines.push(label + ":");
-        for (var i = 0; i < keys.length; i++) {
-          lines.push("  " + formatter(keys[i], bucket[keys[i]]));
-        }
+        for (var i = 0; i < keys.length; i++) lines.push("  " + formatter(keys[i], bucket[keys[i]]));
       }
-
       function fmtEntry(k, v) {
         var conf = (typeof v.confidence === "number") ? v.confidence.toFixed(2) : "—";
-        var src = v.source || "—";
-        return k + ": " + v.value + "  (confidence " + conf + ", " + src + ")";
+        return k + ": " + v.value + "  (confidence " + conf + ", " + (v.source || "—") + ")";
       }
 
       showBucket("Communication style", p.communicationStyle, fmtEntry);
@@ -2248,15 +2750,14 @@ main { max-width: 1280px; margin: 0 auto; padding: 28px 22px 60px; }
         var techs = (v.technologies && v.technologies.length) ? " [" + v.technologies.join(", ") + "]" : "";
         return k + techs + "  (confidence " + conf + ")";
       });
-      showBucket("Terminology", p.terminology, function (k, v) {
-        return '"' + k + '" = ' + v.value;
-      });
+      showBucket("Terminology", p.terminology, function (k, v) { return '"' + k + '" = ' + v.value; });
 
       lines.push("");
       lines.push("Metrics (internal): comm " + p.metrics.communicationUnderstanding +
                  " · prefs " + p.metrics.preferenceUnderstanding +
                  " · projects " + p.metrics.projectUnderstanding);
       lines.push("");
+      lines.push("Compliments are NOT stored. They're only used for the current reply.");
       lines.push("Say /forget <key> or /forget-all to remove items.");
 
       return { message: lines.join("\n"), mood: "idle" };
@@ -2298,10 +2799,8 @@ main { max-width: 1280px; margin: 0 auto; padding: 28px 22px 60px; }
 
     register("remember", function (args) {
       if (args.length < 2) return { message: "Usage: /remember <key> <value>", mood: "confused" };
-      var key = args[0];
-      var value = args.slice(1).join(" ");
-      UserSystem.remember(key, value);
-      return { message: "Got it — I'll remember that " + key + " = " + value + ".", mood: "happy" };
+      UserSystem.remember(args[0], args.slice(1).join(" "));
+      return { message: "Got it — I'll remember that.", mood: "happy" };
     });
 
     register("forget", function (args) {
@@ -2359,7 +2858,8 @@ main { max-width: 1280px; margin: 0 auto; padding: 28px 22px 60px; }
   /* -------- 20. ORCHESTRATOR -------- */
   var ZimeliaInternalState = {
     lastContext: "casual", lastTone: "casual", lastLanguage: "english",
-    lastIntent: "casual_chat", lastSlang: [], lastEmojis: []
+    lastIntent: "casual_chat", lastSlang: [], lastEmojis: [],
+    lastCompliment: null
   };
 
   function processUserMessage(rawText) {
@@ -2404,11 +2904,25 @@ main { max-width: 1280px; margin: 0 auto; padding: 28px 22px 60px; }
       return Promise.resolve({ message: teachReply.message, mood: teachReply.mood, state: "idle", source: "personal-slang" });
     }
 
-    // 3. Session memory extraction
+    // 3. Compliment / praise detection (new layer)
+    var complimentCtx = null;
+    try {
+      complimentCtx = ComplimentSystem.detect(text, conversationCtx);
+      ZimeliaInternalState.lastCompliment = complimentCtx;
+      if (complimentCtx && complimentCtx.detected) {
+        log("Compliment detected:", complimentCtx.category, "| target:", complimentCtx.target,
+            "| intensity:", complimentCtx.intensity, "| tone:", complimentCtx.tone);
+        dispatch("zimelia:complimentDetected", { complimentContext: complimentCtx });
+      }
+    } catch (err) {
+      warn("[Compliment] detection failed (chat continues):", err && err.message);
+      complimentCtx = null;
+    }
+
+    // 4. Session memory extraction
     extractSessionMemories(text);
 
-    // 4. Adaptive learning — isolated so a failure here cannot
-    //    prevent the chat from responding.
+    // 5. Adaptive learning — isolated so a failure here cannot break the chat.
     try {
       UserSystem.learnFromMessage(text, conversationCtx);
       dispatch("zimelia:userLearned", { profile: UserSystem.getMetrics() });
@@ -2416,12 +2930,12 @@ main { max-width: 1280px; margin: 0 auto; padding: 28px 22px 60px; }
       warn("User learning skipped (chat continues):", err && err.message);
     }
 
-    // 5. Topic context
+    // 6. Topic context
     var context = detectContext(text);
     ZimeliaInternalState.lastContext = context;
     log("Topic context:", context);
 
-    // 6. Apply preferences to response
+    // 7. Apply preferences
     var baseSettings = SettingsManager.all();
     var effective;
     try {
@@ -2439,15 +2953,14 @@ main { max-width: 1280px; margin: 0 auto; padding: 28px 22px 60px; }
     }
     if (effective.notes && effective.notes.length) log("Adaptive response settings:", effective.notes.join(" | "));
 
-    // 7. Thinking state
+    // 8. Thinking state
     StateManager.set("thinking");
-    dispatch("zimelia:thinking", { context: context, conversationContext: conversationCtx });
+    dispatch("zimelia:thinking", { context: context, conversationContext: conversationCtx, complimentContext: complimentCtx });
 
-    // 8. Record user turn
+    // 9. Record user turn
     ConversationManager.add("user", text);
 
-    // 9. Ask the AI. Prompt context is built defensively — a bug in
-    //    the learning layer cannot stop the message from being sent.
+    // 10. Ask the AI.
     var userContext = "";
     try {
       userContext = UserSystem.buildPromptContext();
@@ -2461,11 +2974,20 @@ main { max-width: 1280px; margin: 0 auto; padding: 28px 22px 60px; }
       humorLevel: effective.humorLevel,
       responseLength: effective.responseLength,
       conversationContext: conversationCtx,
+      complimentContext: complimentCtx,
       userContext: userContext
     })
     .then(function (rawResponse) {
       var envelope = processZimeliaResponse(rawResponse);
       if (rawResponse && rawResponse.source) envelope.source = rawResponse.source;
+
+      // If the local brain responded and a compliment was detected but
+      // the model didn't override the mood, use the compliment-suggested mood.
+      if ((!envelope.mood || envelope.mood === "idle") && complimentCtx && complimentCtx.detected) {
+        var suggested = ComplimentSystem.suggestMood(complimentCtx);
+        if (suggested && isValidMood(suggested)) envelope.mood = suggested;
+      }
+
       log("Response received. Source:", envelope.source, "| Mood:", envelope.mood);
       ConversationManager.add("assistant", envelope.message);
       StateManager.set("responding");
@@ -2526,12 +3048,18 @@ main { max-width: 1280px; margin: 0 auto; padding: 28px 22px 60px; }
 
     memory: MemoryManager,
     getConversation: ConversationManager.get,
-
     commands: Commands.list,
 
     language: {
       analyze: ConversationLanguage.buildContext,
       personalSlang: ConversationLanguage.getPersonalSlang
+    },
+
+    compliment: {
+      analyze: ComplimentSystem.detect,
+      formatForPrompt: ComplimentSystem.formatForPrompt,
+      suggestMood: ComplimentSystem.suggestMood,
+      suggestResponseStyle: ComplimentSystem.suggestResponseStyle
     },
 
     user: {
@@ -2572,6 +3100,8 @@ main { max-width: 1280px; margin: 0 auto; padding: 28px 22px 60px; }
         tone: ZimeliaInternalState.lastTone,
         language: ZimeliaInternalState.lastLanguage,
         intent: ZimeliaInternalState.lastIntent,
+        compliment: ZimeliaInternalState.lastCompliment && ZimeliaInternalState.lastCompliment.detected
+          ? ZimeliaInternalState.lastCompliment.category : null,
         understanding: UserSystem.getMetrics()
       };
     },
@@ -2911,7 +3441,6 @@ main { max-width: 1280px; margin: 0 auto; padding: 28px 22px 60px; }
     Zimelia.setMood(PROFILE.defaults.mood);
     Zimelia.setState(PROFILE.defaults.state);
 
-    // Show a small summary of what's already learned (if anything)
     var p = UserSystem.getProfile();
     var total = 0;
     ["communicationStyle","preferences","interests","skills","projects","terminology","interactionPreferences"].forEach(function (b) {
@@ -2924,14 +3453,15 @@ main { max-width: 1280px; margin: 0 auto; padding: 28px 22px 60px; }
     log("ZIMELIA ready. Version", IDENTITY.version);
     log("Brain:", isAIConfigured() ? "AI model" : "Local fallback");
     log("Language layer: active");
+    log("Compliment system: active");
     log("User understanding: active. Already knows " + total + " item(s).");
     log("Public API: window.Zimelia");
 
     console.info(
       "%c[Zimelia] " + IDENTITY.version + " ready.%c\n" +
       "Public API: window.Zimelia\n" +
-      "Commands: /help /status /profile /preferences /interests /projects /remember /forget /forget-all\n" +
-      "Try in console: Zimelia.user.getProfile()\n" +
+      "Commands: /help /status /profile /compliment /remember /forget /forget-all\n" +
+      "Try: Zimelia.compliment.analyze(\"bro you cooked 😭🔥\")\n" +
       "Enable a real AI: Zimelia.setConfig('endpoint', '...'); Zimelia.setConfig('apiKey', 'sk-...')",
       "color:#A78BFA;font-weight:bold", "color:inherit"
     );
