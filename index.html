@@ -53,7 +53,7 @@ p { margin: 0; }
 .particle:nth-child(5n) { color: var(--amber); background: var(--amber); }
 @keyframes rise { 0% { transform: translateY(0) scale(1); opacity: 0; } 10% { opacity: 0.7; } 90% { opacity: 0.5; } 100% { transform: translateY(-110vh) scale(0.6); opacity: 0; } }
 @keyframes floatA { 0%, 100% { transform: translate(0, 0); } 50% { transform: translate(-40px, 30px); } }
-@keyframes floatB { 0%, 100% { transform: translate(0, 0); } 50% { transform: translate(50px, -30px); } }
+@keyframes floatB { 0%, 100% { transform: translate(0, 0); } 50% { transform: translate(50px, -40px); } }
 @keyframes gridDrift { from { background-position: 0 0; } to { background-position: 0 600px; } }
 .topbar { position: sticky; top: 0; z-index: 50; backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); background: linear-gradient(180deg, var(--glass-strong), transparent); border-bottom: 1px solid var(--line); }
 .topbar__inner { max-width: 1280px; margin: 0 auto; padding: 14px 22px; display: flex; align-items: center; justify-content: space-between; gap: 16px; }
@@ -260,7 +260,7 @@ main { max-width: 1280px; margin: 0 auto; padding: 28px 22px 60px; }
         </div>
         <span class="stage__badge">
           <span class="status-pill__dot" aria-hidden="true"></span>
-          ZIMELIA · v<span id="versionBadge">0.6.0</span>
+          ZIMELIA · v<span id="versionBadge">0.6.1</span>
         </span>
       </div>
 
@@ -349,7 +349,7 @@ main { max-width: 1280px; margin: 0 auto; padding: 28px 22px 60px; }
         <p class="about__text">She understands how people talk online — slang, abbreviations, emojis, memes, Taglish, typos. She also learns how you like to be talked to, over time, without becoming nosy about it.</p>
         <dl class="about__stats">
           <div class="stat"><dt class="stat__label">Status</dt><dd class="stat__value stat__value--live">Online</dd></div>
-          <div class="stat"><dt class="stat__label">Version</dt><dd class="stat__value" id="aboutVersion">0.6.0</dd></div>
+          <div class="stat"><dt class="stat__label">Version</dt><dd class="stat__value" id="aboutVersion">0.6.1</dd></div>
           <div class="stat"><dt class="stat__label">Brain</dt><dd class="stat__value" id="brainStat">Local fallback</dd></div>
         </dl>
       </div>
@@ -476,7 +476,7 @@ main { max-width: 1280px; margin: 0 auto; padding: 28px 22px 60px; }
   "use strict";
 
   /* ============================================================
-     ZIMELIA — FULL SYSTEM  ·  v0.6.0
+     ZIMELIA — FULL SYSTEM  ·  v0.6.1
      Sections:
        1.  Debug
        2.  Identity
@@ -486,7 +486,7 @@ main { max-width: 1280px; margin: 0 auto; padding: 28px 22px 60px; }
        6.  Personality
        7.  Context detection
        8.  Conversation language layer
-       9.  USER SYSTEM  (NEW — adaptive understanding)
+       9.  USER SYSTEM  (hardened — never crashes on missing data)
        10. Memory manager (session)
        11. Conversation manager
        12. State manager
@@ -513,7 +513,7 @@ main { max-width: 1280px; margin: 0 auto; padding: 28px 22px 60px; }
   /* -------- 2. IDENTITY -------- */
   var IDENTITY = {
     name: "Zimelia",
-    version: "0.6.0",
+    version: "0.6.1",
     role: "Personal AI Assistant",
     developer: "Kaito",
     status: "development",
@@ -935,11 +935,13 @@ main { max-width: 1280px; margin: 0 auto; padding: 28px 22px 60px; }
 
 
   /* ============================================================
-     9. USER SYSTEM — ADAPTIVE UNDERSTANDING  (NEW)
-     ============================================================
-     Learns how the user communicates, gradually, with confidence.
-     Never assumes from a single message. Explicit beats inferred.
-     Current request always beats stored preference.
+     9. USER SYSTEM — ADAPTIVE UNDERSTANDING (hardened)
+
+     v0.6.1 — Fixes the crash where buildPromptContext() assumed
+     every stored entry was a fully-formed object with a `.value`
+     property. Broken/stale entries are now sanitised on load
+     and never trusted at read time. Every public method is
+     wrapped so a failure cannot take down the chat.
      ============================================================ */
 
   var UserSystem = (function () {
@@ -947,7 +949,6 @@ main { max-width: 1280px; margin: 0 auto; padding: 28px 22px 60px; }
     var STORAGE_KEY = "zimelia_user_profile_v1";
     var OBSERVATION_LOG_LIMIT = 40;
 
-    // Confidence thresholds (documented for readability)
     var CONFIDENCE = {
       WEAK:     0.30,
       POSSIBLE: 0.60,
@@ -956,20 +957,20 @@ main { max-width: 1280px; margin: 0 auto; padding: 28px 22px 60px; }
       EXPLICIT: 1.00
     };
 
-    // Fresh empty profile
+    /* -------- Fresh profile -------- */
     function emptyProfile() {
       return {
         version: 1,
         createdAt: Date.now(),
         updatedAt: Date.now(),
-        communicationStyle: {},   // { trait: {value, confidence, source, ts, evidence} }
-        preferences: {},          // { key:   {value, confidence, source, ts, evidence} }
-        interests: {},            // { name:  {confidence, source, ts, mentions} }
-        skills: {},               // { topic: {level, confidence, source, ts} }
-        projects: {},             // { name:  {description, technologies, status, lastMentioned, confidence, mentions} }
-        terminology: {},          // { term:  {meaning, source, ts} }
-        interactionPreferences: {},// { key:   {value, confidence, source, ts} }
-        observations: [],         // recent observation log
+        communicationStyle: {},
+        preferences: {},
+        interests: {},
+        skills: {},
+        projects: {},
+        terminology: {},
+        interactionPreferences: {},
+        observations: [],
         metrics: {
           communicationUnderstanding: 0,
           preferenceUnderstanding: 0,
@@ -978,41 +979,170 @@ main { max-width: 1280px; margin: 0 auto; padding: 28px 22px 60px; }
       };
     }
 
-    var profile = load();
+    /* -------- Sanitisers (run at load AND at read) -------- */
+    function isPlainObject(o) {
+      return o !== null && typeof o === "object" && !Array.isArray(o);
+    }
 
-    /* ---------- Persistence ---------- */
+    function sanitiseEntryBucket(raw) {
+      var out = {};
+      if (!isPlainObject(raw)) return out;
+      for (var k in raw) {
+        if (!Object.prototype.hasOwnProperty.call(raw, k)) continue;
+        var v = raw[k];
+        if (!isPlainObject(v)) continue;
+        if (!("value" in v)) continue;
+        if (v.value == null) continue;
+        var entry = {
+          value: v.value,
+          confidence: (typeof v.confidence === "number" && isFinite(v.confidence))
+            ? Math.max(0, Math.min(1, v.confidence))
+            : CONFIDENCE.WEAK,
+          source: (typeof v.source === "string" && v.source) ? v.source : "inferred",
+          ts: (typeof v.ts === "number") ? v.ts : Date.now()
+        };
+        if (typeof v.evidence === "number") entry.evidence = v.evidence;
+        if (typeof v.note === "string") entry.note = v.note;
+        out[k] = entry;
+      }
+      return out;
+    }
+
+    function sanitiseInterests(raw) {
+      var out = {};
+      if (!isPlainObject(raw)) return out;
+      for (var k in raw) {
+        if (!Object.prototype.hasOwnProperty.call(raw, k)) continue;
+        var v = raw[k];
+        if (!isPlainObject(v)) continue;
+        out[k] = {
+          confidence: (typeof v.confidence === "number" && isFinite(v.confidence))
+            ? Math.max(0, Math.min(1, v.confidence))
+            : CONFIDENCE.WEAK,
+          source: (typeof v.source === "string") ? v.source : "inferred",
+          ts: (typeof v.ts === "number") ? v.ts : Date.now(),
+          mentions: (typeof v.mentions === "number") ? v.mentions : 1
+        };
+      }
+      return out;
+    }
+
+    function sanitiseProjects(raw) {
+      var out = {};
+      if (!isPlainObject(raw)) return out;
+      for (var k in raw) {
+        if (!Object.prototype.hasOwnProperty.call(raw, k)) continue;
+        var v = raw[k];
+        if (!isPlainObject(v)) continue;
+        out[k] = {
+          name: (typeof v.name === "string" && v.name) ? v.name : k,
+          description: (typeof v.description === "string") ? v.description : null,
+          technologies: Array.isArray(v.technologies)
+            ? v.technologies.filter(function (t) { return typeof t === "string"; })
+            : [],
+          status: (typeof v.status === "string") ? v.status : "active",
+          lastMentioned: (typeof v.lastMentioned === "number") ? v.lastMentioned : Date.now(),
+          confidence: (typeof v.confidence === "number" && isFinite(v.confidence))
+            ? Math.max(0, Math.min(1, v.confidence))
+            : CONFIDENCE.WEAK,
+          mentions: (typeof v.mentions === "number") ? v.mentions : 1
+        };
+      }
+      return out;
+    }
+
+    function sanitiseObservations(raw) {
+      if (!Array.isArray(raw)) return [];
+      var out = [];
+      for (var i = 0; i < raw.length; i++) {
+        var o = raw[i];
+        if (!isPlainObject(o)) continue;
+        out.push({
+          category: (typeof o.category === "string") ? o.category : "unknown",
+          key: (typeof o.key === "string") ? o.key : "unknown",
+          value: o.value,
+          source: (typeof o.source === "string") ? o.source : "inferred",
+          ts: (typeof o.ts === "number") ? o.ts : Date.now()
+        });
+        if (out.length >= OBSERVATION_LOG_LIMIT) break;
+      }
+      return out;
+    }
+
+    function sanitiseMetrics(raw, fallback) {
+      var out = Object.assign({}, fallback);
+      if (!isPlainObject(raw)) return out;
+      for (var k in out) {
+        if (typeof raw[k] === "number" && isFinite(raw[k])) {
+          out[k] = Math.max(0, Math.min(1, raw[k]));
+        }
+      }
+      return out;
+    }
+
+    function sanitiseProfile(raw) {
+      var fresh = emptyProfile();
+      if (!isPlainObject(raw)) return fresh;
+      fresh.version   = (typeof raw.version === "number")   ? raw.version   : 1;
+      fresh.createdAt = (typeof raw.createdAt === "number") ? raw.createdAt : Date.now();
+      fresh.updatedAt = (typeof raw.updatedAt === "number") ? raw.updatedAt : Date.now();
+      fresh.communicationStyle     = sanitiseEntryBucket(raw.communicationStyle);
+      fresh.preferences            = sanitiseEntryBucket(raw.preferences);
+      fresh.skills                 = sanitiseEntryBucket(raw.skills);
+      fresh.terminology            = sanitiseEntryBucket(raw.terminology);
+      fresh.interactionPreferences = sanitiseEntryBucket(raw.interactionPreferences);
+      fresh.interests              = sanitiseInterests(raw.interests);
+      fresh.projects               = sanitiseProjects(raw.projects);
+      fresh.observations           = sanitiseObservations(raw.observations);
+      fresh.metrics                = sanitiseMetrics(raw.metrics, fresh.metrics);
+      return fresh;
+    }
+
+    function countEntries(p) {
+      if (!isPlainObject(p)) return 0;
+      var n = 0;
+      ["communicationStyle", "preferences", "skills", "terminology",
+       "interactionPreferences", "interests", "projects"].forEach(function (b) {
+        if (isPlainObject(p[b])) n += Object.keys(p[b]).length;
+      });
+      return n;
+    }
+
+    /* -------- Persistence (all errors swallowed) -------- */
     function load() {
       try {
         var raw = localStorage.getItem(STORAGE_KEY);
         if (!raw) return emptyProfile();
         var parsed = JSON.parse(raw);
-        if (!parsed || typeof parsed !== "object") return emptyProfile();
-        // Merge with fresh template so new fields exist
-        var base = emptyProfile();
-        for (var k in base) if (parsed[k] === undefined) parsed[k] = base[k];
-        return parsed;
+        var clean = sanitiseProfile(parsed);
+        var dropped = countEntries(parsed) - countEntries(clean);
+        if (dropped > 0) {
+          log("[USER] Sanitised profile — dropped " + dropped + " broken entr" + (dropped === 1 ? "y" : "ies") + ".");
+        }
+        return clean;
       } catch (e) {
-        warn("User profile load failed — starting fresh:", e && e.message);
+        warn("[USER] Profile load failed — using fresh defaults:", e && e.message);
         return emptyProfile();
       }
     }
+
+    var profile = load();
+
     function save() {
       profile.updatedAt = Date.now();
       try { localStorage.setItem(STORAGE_KEY, JSON.stringify(profile)); }
-      catch (e) { warn("User profile save failed:", e && e.message); }
+      catch (e) { warn("[USER] Profile save failed:", e && e.message); }
     }
+
     function clearMemory() {
       profile = emptyProfile();
       try { localStorage.removeItem(STORAGE_KEY); } catch (e) {}
-      log("User profile cleared.");
+      log("[USER] Profile cleared.");
     }
 
-    /* ---------- Privacy guard ---------- */
-    // Very cheap filter: don't record anything that looks like a secret.
+    /* -------- Privacy filter -------- */
     var SENSITIVE_PATTERNS = [
-      /\bsk-[a-z0-9]{10,}/i,           // OpenAI-style keys
-      /\bghp_[a-z0-9]{20,}/i,           // GitHub tokens
-      /\b[A-Z0-9]{20,}\b/,              // long uppercase tokens
+      /\bsk-[a-z0-9]{10,}/i, /\bghp_[a-z0-9]{20,}/i,
       /\bpassword\b/i, /\bpasswd\b/i,
       /\bapi[_-]?key\b/i, /\bsecret\b/i,
       /\bcredit[ _-]?card\b/i, /\bcvv\b/i,
@@ -1025,77 +1155,86 @@ main { max-width: 1280px; margin: 0 auto; padding: 28px 22px 60px; }
       return false;
     }
 
-    /* ---------- Observation recording ---------- */
+    /* -------- Safe entry access -------- */
+    function bucketFor(category) {
+      switch (category) {
+        case "communicationStyle":    return profile.communicationStyle;
+        case "preference":            return profile.preferences;
+        case "terminology":           return profile.terminology;
+        case "interactionPreference": return profile.interactionPreferences;
+        case "skill":                 return profile.skills;
+        default: return null;
+      }
+    }
+
+    // Returns the entry ONLY when it is a valid object with a value.
+    function safeEntry(bucket, key) {
+      if (!isPlainObject(bucket)) return null;
+      var v = bucket[key];
+      if (!isPlainObject(v)) return null;
+      if (!("value" in v)) return null;
+      return v;
+    }
+
+    /* -------- Observation recording -------- */
     function recordObservation(obs) {
-      // obs = { category, key, value, source, confidence, evidence }
       if (!obs || !obs.category || !obs.key) return;
       if (obs.value == null || obs.value === "") return;
-
       obs.source = obs.source || "inferred";
       var now = Date.now();
 
-      // Privacy gate
       if (looksSensitive(String(obs.value))) {
-        log("Observation skipped (looks sensitive).");
+        log("[USER] Observation skipped (looks sensitive).");
         return;
       }
 
-      var bucket = categoryBucket(obs.category);
+      var bucket = bucketFor(obs.category);
       if (!bucket) return;
 
-      var existing = bucket[obs.key];
+      var existing = safeEntry(bucket, obs.key);
+      var initialConfidence = (obs.source === "explicit")
+        ? CONFIDENCE.EXPLICIT
+        : (typeof obs.confidence === "number" ? obs.confidence : 0.35);
 
       if (!existing) {
-        // New observation
         bucket[obs.key] = {
           value: obs.value,
-          confidence: obs.source === "explicit" ? CONFIDENCE.EXPLICIT : (obs.confidence || 0.35),
+          confidence: initialConfidence,
           source: obs.source,
           ts: now,
-          evidence: 1,
-          note: obs.note || null
+          evidence: 1
         };
+        if (obs.note) bucket[obs.key].note = obs.note;
         logObservation("NEW", obs);
+      } else if (obs.source === "explicit") {
+        var oldVal = existing.value;
+        existing.value = obs.value;
+        existing.confidence = CONFIDENCE.EXPLICIT;
+        existing.source = "explicit";
+        existing.ts = now;
+        existing.evidence = (existing.evidence || 1) + 1;
+        logObservation("EXPLICIT OVERRIDE", obs, oldVal);
+      } else if (existing.value === obs.value) {
+        existing.confidence = Math.min(CONFIDENCE.STRONG, (existing.confidence || 0.3) + 0.15);
+        existing.evidence = (existing.evidence || 1) + 1;
+        existing.ts = now;
+        logObservation("REINFORCED", obs, null, existing.confidence);
       } else {
-        if (obs.source === "explicit") {
-          // Explicit wins instantly — overrides inferred.
-          var old = existing.value;
+        if (existing.source === "explicit") {
+          logObservation("CONFLICT vs explicit — holding", obs, existing.value);
+          return;
+        }
+        existing.confidence = (existing.confidence || 0.3) - 0.25;
+        if (existing.confidence <= CONFIDENCE.WEAK) {
+          var prior = existing.value;
           existing.value = obs.value;
-          existing.confidence = CONFIDENCE.EXPLICIT;
-          existing.source = "explicit";
+          existing.confidence = obs.confidence || 0.4;
+          existing.source = obs.source;
           existing.ts = now;
-          existing.evidence = (existing.evidence || 1) + 1;
-          logObservation("EXPLICIT OVERRIDE", obs, old);
-        } else if (existing.value === obs.value) {
-          // Reinforce existing
-          existing.confidence = Math.min(CONFIDENCE.STRONG, existing.confidence + 0.15);
-          existing.evidence = (existing.evidence || 1) + 1;
-          existing.ts = now;
-          logObservation("REINFORCED", obs, null, existing.confidence);
+          existing.evidence = 1;
+          logObservation("REPLACED", obs, prior);
         } else {
-          // Conflict — new value. Reduce confidence of old. If old was explicit,
-          // require TWO new observations before it's replaced. Otherwise,
-          // replace if new confidence is close.
-          if (existing.source === "explicit") {
-            // Explicit only yields to another explicit statement.
-            // (User contradicted themselves — keep the newer explicit.
-            //  For now we just log and leave; a second explicit will override.)
-            logObservation("CONFLICT vs explicit — holding", obs, existing.value);
-            return;
-          }
-          existing.confidence -= 0.25;
-          if (existing.confidence <= CONFIDENCE.WEAK) {
-            // Replace with the new value
-            var oldVal = existing.value;
-            existing.value = obs.value;
-            existing.confidence = obs.confidence || 0.4;
-            existing.source = obs.source;
-            existing.ts = now;
-            existing.evidence = 1;
-            logObservation("REPLACED", obs, oldVal);
-          } else {
-            logObservation("CONFLICT — old still stronger", obs, existing.value);
-          }
+          logObservation("CONFLICT — old still stronger", obs, existing.value);
         }
       }
 
@@ -1104,26 +1243,11 @@ main { max-width: 1280px; margin: 0 auto; padding: 28px 22px 60px; }
       save();
     }
 
-    function categoryBucket(cat) {
-      switch (cat) {
-        case "communicationStyle":   return profile.communicationStyle;
-        case "preference":           return profile.preferences;
-        case "terminology":          return profile.terminology;
-        case "interactionPreference":return profile.interactionPreferences;
-        case "interest":             return profile.interests;
-        case "skill":                return profile.skills;
-        case "project":              return profile.projects;
-        default: return null;
-      }
-    }
-
     function pushObservationLog(obs) {
+      if (!Array.isArray(profile.observations)) profile.observations = [];
       profile.observations.unshift({
-        category: obs.category,
-        key: obs.key,
-        value: obs.value,
-        source: obs.source,
-        ts: Date.now()
+        category: obs.category, key: obs.key, value: obs.value,
+        source: obs.source, ts: Date.now()
       });
       while (profile.observations.length > OBSERVATION_LOG_LIMIT) profile.observations.pop();
     }
@@ -1136,76 +1260,57 @@ main { max-width: 1280px; margin: 0 auto; padding: 28px 22px 60px; }
     }
 
     function updateMetrics() {
-      function avgConfidence(bucket) {
+      function avg(bucket) {
+        if (!isPlainObject(bucket)) return 0;
         var keys = Object.keys(bucket);
         if (!keys.length) return 0;
-        var total = 0;
-        for (var i = 0; i < keys.length; i++) total += (bucket[keys[i]].confidence || 0);
-        return total / keys.length;
+        var total = 0, n = 0;
+        for (var i = 0; i < keys.length; i++) {
+          var e = bucket[keys[i]];
+          if (isPlainObject(e) && typeof e.confidence === "number") { total += e.confidence; n++; }
+        }
+        return n === 0 ? 0 : total / n;
       }
-      profile.metrics.communicationUnderstanding = round2(avgConfidence(profile.communicationStyle) * 0.9 + avgConfidence(profile.interactionPreferences) * 0.1);
-      profile.metrics.preferenceUnderstanding    = round2(avgConfidence(profile.preferences));
-      profile.metrics.projectUnderstanding       = round2(avgConfidence(profile.projects));
+      profile.metrics.communicationUnderstanding = round2(avg(profile.communicationStyle) * 0.9 + avg(profile.interactionPreferences) * 0.1);
+      profile.metrics.preferenceUnderstanding    = round2(avg(profile.preferences));
+      profile.metrics.projectUnderstanding       = round2(avg(profile.projects));
     }
     function round2(n) { return Math.round(n * 100) / 100; }
 
-    /* ---------- Learning rules ---------- */
-    // Explicit-preference patterns — the user is directly telling us.
+    /* -------- Learning rules -------- */
     var EXPLICIT_RULES = [
-      { re: /\b(?:i (?:prefer|like|want) (?:short|shorter|brief|concise) (?:answers?|replies|responses?|explanations?))\b/i,
-        key: "response_length", value: "short", note: "explicit: prefers short responses" },
-      { re: /\b(?:please (?:don'?t|do not) make (?:the )?(?:answers?|replies|responses?|explanations?) (?:so |too )?long)\b/i,
-        key: "response_length", value: "short", note: "explicit: don't make replies long" },
-      { re: /\b(?:keep (?:them|it|answers?|replies) (?:short|brief|concise))\b/i,
-        key: "response_length", value: "short" },
-      { re: /\b(?:i (?:prefer|like|want) (?:detailed|longer|in.depth) (?:answers?|replies|responses?|explanations?))\b/i,
-        key: "response_length", value: "detailed" },
-      { re: /\b(?:explain (?:it|that|this) (?:more|further|in detail))\b/i,
-        key: "response_length", value: "detailed" },
-      { re: /\b(?:i (?:actually |really )?like (?:it |when you )?jok(?:e|ing)|i like (?:your )?humor)\b/i,
-        key: "humor_preference", value: "playful", note: "explicit: likes humor" },
-      { re: /\b(?:serious mode|be serious|can you (?:please )?be serious|no jokes)\b/i,
-        key: "humor_preference", value: "none", note: "explicit: serious mode" },
-      { re: /\b(?:i (?:prefer|like) (?:simpler|simple|easier) explanations?)\b/i,
-        key: "explanation_complexity", value: "simple" },
-      { re: /\b(?:i (?:prefer|like) (?:technical|detailed|advanced) explanations?)\b/i,
-        key: "explanation_complexity", value: "technical" },
-      { re: /\b(?:i (?:prefer|like) (?:examples?))\b/i,
-        key: "likes_examples", value: "yes" },
-      { re: /\b(?:i (?:prefer|like) (?:step.by.step|steps))\b/i,
-        key: "likes_steps", value: "yes" },
-      { re: /\b(?:just give me the (?:code|answer))\b/i,
-        key: "likes_direct_answers", value: "yes" }
+      { re: /\b(?:i (?:prefer|like|want) (?:short|shorter|brief|concise) (?:answers?|replies|responses?|explanations?))\b/i, key: "response_length", value: "short" },
+      { re: /\b(?:please (?:don'?t|do not) make (?:the )?(?:answers?|replies|responses?|explanations?) (?:so |too )?long)\b/i, key: "response_length", value: "short" },
+      { re: /\b(?:keep (?:them|it|answers?|replies) (?:short|brief|concise))\b/i, key: "response_length", value: "short" },
+      { re: /\b(?:i (?:prefer|like|want) (?:detailed|longer|in.depth) (?:answers?|replies|responses?|explanations?))\b/i, key: "response_length", value: "detailed" },
+      { re: /\b(?:explain (?:it|that|this) (?:more|further|in detail))\b/i, key: "response_length", value: "detailed" },
+      { re: /\b(?:i (?:actually |really )?like (?:it |when you )?jok(?:e|ing)|i like (?:your )?humor)\b/i, key: "humor_preference", value: "playful" },
+      { re: /\b(?:serious mode|be serious|can you (?:please )?be serious|no jokes)\b/i, key: "humor_preference", value: "none" },
+      { re: /\b(?:i (?:prefer|like) (?:simpler|simple|easier) explanations?)\b/i, key: "explanation_complexity", value: "simple" },
+      { re: /\b(?:i (?:prefer|like) (?:technical|detailed|advanced) explanations?)\b/i, key: "explanation_complexity", value: "technical" },
+      { re: /\b(?:i (?:prefer|like) (?:examples?))\b/i, key: "likes_examples", value: "yes" },
+      { re: /\b(?:i (?:prefer|like) (?:step.by.step|steps))\b/i, key: "likes_steps", value: "yes" },
+      { re: /\b(?:just give me the (?:code|answer))\b/i, key: "likes_direct_answers", value: "yes" }
+    ];
+
+    var CORRECTION_PREF = [
+      { re: /actually[, ]+i (?:prefer|like|want) (short|shorter|brief)\b/i, key: "response_length", value: "short" },
+      { re: /actually[, ]+i (?:prefer|like|want) (long|longer|detailed)\b/i, key: "response_length", value: "detailed" },
+      { re: /actually[, ]+i (?:don'?t|do not) like (?:jokes|humor)\b/i, key: "humor_preference", value: "none" }
     ];
 
     var CORRECTION_RULES = [
-      { re: /\b(?:actually,? (?:i )?don'?t|that'?s not right|not exactly|you'?re wrong)\b/i,
-        key: "_generic_correction", value: "true" },
-      { re: /\b(?:that'?s too (?:long|complicated|much)|make (?:it|them) (?:shorter|simpler))\b/i,
-        key: "response_length", value: "short", note: "corrected: replies too long" },
-      { re: /\b(?:that'?s (?:not what i (?:meant|said)|wrong))\b/i,
-        key: "_generic_correction", value: "true" },
-      { re: /\b(?:you'?re misunderstanding me|you don'?t get it)\b/i,
-        key: "_generic_correction", value: "true" }
+      { re: /\b(?:that'?s too (?:long|complicated|much)|make (?:it|them) (?:shorter|simpler))\b/i, key: "response_length", value: "short", note: "corrected: replies too long" },
+      { re: /\b(?:that'?s (?:not what i (?:meant|said)|wrong))\b/i, key: "_generic_correction" },
+      { re: /\b(?:you'?re misunderstanding me|you don'?t get it)\b/i, key: "_generic_correction" },
+      { re: /\b(?:actually,? (?:i )?don'?t|that'?s not right|not exactly)\b/i, key: "_generic_correction" }
     ];
 
-    // Correction target phrases — "actually I prefer short"
-    var CORRECTION_PREF = [
-      { re: /actually[, ]+i (?:prefer|like|want) (short|shorter|brief)\b/i,
-        key: "response_length", value: "short" },
-      { re: /actually[, ]+i (?:prefer|like|want) (long|longer|detailed)\b/i,
-        key: "response_length", value: "detailed" },
-      { re: /actually[, ]+i (?:don'?t|do not) like (?:jokes|humor)\b/i,
-        key: "humor_preference", value: "none" }
-    ];
-
-    // Learning signals
     var LEARNING_SIGNALS = {
-      positive: /\b(?:that'?s (?:exactly )?(?:what i wanted|perfect|great|amazing)|that makes sense|thanks|thank you|nice|cool|👌|👍|🔥)\b/i,
+      positive: /\b(?:that'?s (?:exactly )?(?:what i wanted|perfect|great|amazing)|that makes sense|thanks|thank you|nice|cool|👌|👍)\b/i,
       negative: /\b(?:that'?s (?:too (?:long|complicated|much)|wrong|not helpful)|make it (?:shorter|simpler)|no,? that'?s not)\b/i
     };
 
-    // Topic detection for interests/projects/skills
     var TOPIC_KEYWORDS = [
       "javascript","python","html","css","react","vue","node","npm",
       "roblox","minecraft","fortnite","valorant","genshin","gaming",
@@ -1216,38 +1321,28 @@ main { max-width: 1280px; margin: 0 auto; padding: 28px 22px 60px; }
       "design","ui","ux"
     ];
 
-    /* ---------- Main learning entry ---------- */
+    /* -------- Main learning entry -------- */
     function learnFromMessage(text, conversationCtx) {
-      if (!text || !text.trim()) return;
-      var t = text.trim();
-      if (looksSensitive(t)) { log("Learning skipped — message looks sensitive."); return; }
+      try {
+        if (!text || !text.trim()) return;
+        var t = text.trim();
+        if (looksSensitive(t)) { log("[USER] Learning skipped — message looks sensitive."); return; }
 
-      // 1. Explicit preferences (highest priority)
-      scanExplicitPreferences(t);
+        scanExplicitPreferences(t);
+        scanCorrections(t);
+        scanTerminology(t);
+        scanProjects(t);
+        scanInterests(t);
+        scanSkills(t);
+        if (conversationCtx) scanCommunicationStyle(t, conversationCtx);
+        scanFeedback(t);
 
-      // 2. Corrections (override inferred)
-      scanCorrections(t);
-
-      // 3. Terminology — "when I say X I mean Y"
-      scanTerminology(t);
-
-      // 4. Projects — "I'm working on X" / "called X" / "building X"
-      scanProjects(t);
-
-      // 5. Interests — repeated mentions
-      scanInterests(t);
-
-      // 6. Skills — explicit level or repeated topic work
-      scanSkills(t);
-
-      // 7. Communication style — inferred over time
-      if (conversationCtx) scanCommunicationStyle(t, conversationCtx);
-
-      // 8. Interaction preferences — inferred from feedback
-      scanFeedback(t);
-
-      updateMetrics();
-      save();
+        updateMetrics();
+        save();
+      } catch (e) {
+        // Learning must never break the chat.
+        warn("[USER] learnFromMessage failed (chat continues):", e && e.message);
+      }
     }
 
     function scanExplicitPreferences(text) {
@@ -1255,49 +1350,34 @@ main { max-width: 1280px; margin: 0 auto; padding: 28px 22px 60px; }
         var rule = EXPLICIT_RULES[i];
         if (rule.re.test(text)) {
           recordObservation({
-            category: "preference",
-            key: rule.key,
-            value: rule.value,
-            source: "explicit",
-            confidence: CONFIDENCE.EXPLICIT,
-            note: rule.note || null
+            category: "preference", key: rule.key, value: rule.value,
+            source: "explicit", confidence: CONFIDENCE.EXPLICIT
           });
         }
       }
     }
 
     function scanCorrections(text) {
-      // Direct preference correction
       for (var i = 0; i < CORRECTION_PREF.length; i++) {
         var r = CORRECTION_PREF[i];
-        var m = text.match(r.re);
-        if (m) {
+        if (r.re.test(text)) {
           recordObservation({
-            category: "preference",
-            key: r.key,
-            value: r.value,
-            source: "explicit",
-            confidence: CONFIDENCE.EXPLICIT,
+            category: "preference", key: r.key, value: r.value,
+            source: "explicit", confidence: CONFIDENCE.EXPLICIT,
             note: "user corrected"
           });
           return;
         }
       }
-      // Generic correction
       for (var j = 0; j < CORRECTION_RULES.length; j++) {
         var cr = CORRECTION_RULES[j];
         if (cr.re.test(text)) {
           if (cr.key === "_generic_correction") {
-            log("[USER] Generic correction detected — lowering last reply's style confidence.");
-            // Slightly reduce confidence on whichever preference was most recently reinforced.
             softenRecentPreferences();
           } else {
             recordObservation({
-              category: "preference",
-              key: cr.key,
-              value: cr.value,
-              source: "explicit",
-              confidence: CONFIDENCE.EXPLICIT,
+              category: "preference", key: cr.key, value: cr.value,
+              source: "explicit", confidence: CONFIDENCE.EXPLICIT,
               note: cr.note || null
             });
           }
@@ -1306,179 +1386,147 @@ main { max-width: 1280px; margin: 0 auto; padding: 28px 22px 60px; }
     }
 
     function softenRecentPreferences() {
-      // Reduce confidence of the two most recently updated preferences by 0.15.
+      if (!isPlainObject(profile.preferences)) return;
       var items = [];
-      for (var k in profile.preferences) items.push({ key: k, ts: profile.preferences[k].ts });
+      for (var k in profile.preferences) {
+        var e = profile.preferences[k];
+        if (isPlainObject(e) && typeof e.ts === "number") items.push({ key: k, ts: e.ts });
+      }
       items.sort(function (a, b) { return b.ts - a.ts; });
       for (var i = 0; i < Math.min(2, items.length); i++) {
-        var p = profile.preferences[items[i].key];
-        if (p.source === "explicit") continue;
+        var p = safeEntry(profile.preferences, items[i].key);
+        if (!p || p.source === "explicit") continue;
         p.confidence = Math.max(0, p.confidence - 0.15);
       }
     }
 
     function scanTerminology(text) {
-      // "when I say X I mean Y"
       var m1 = text.match(/when i say ['"]?([\w-]+)['"]?[, ]+i mean (?:it'?s |its )?(.+)/i);
       if (m1) {
         recordObservation({
-          category: "terminology",
-          key: m1[1].toLowerCase(),
+          category: "terminology", key: m1[1].toLowerCase(),
           value: m1[2].trim().replace(/[.!]$/, ""),
           source: "explicit"
         });
         return;
       }
-      // "I use X to mean Y"
       var m2 = text.match(/i use ['"]?([\w-]+)['"]? to mean (.+)/i);
       if (m2) {
         recordObservation({
-          category: "terminology",
-          key: m2[1].toLowerCase(),
+          category: "terminology", key: m2[1].toLowerCase(),
           value: m2[2].trim().replace(/[.!]$/, ""),
           source: "explicit"
         });
       }
-      // "I call this X"
       var m3 = text.match(/i call (?:this|it) ['"]?([\w-]+)['"]?/i);
       if (m3) {
         recordObservation({
-          category: "terminology",
-          key: m3[1].toLowerCase(),
-          value: "user-defined term",
-          source: "explicit"
+          category: "terminology", key: m3[1].toLowerCase(),
+          value: "user-defined term", source: "explicit"
         });
       }
     }
 
     function scanProjects(text) {
-      // "I'm working on X" / "my project X" / "I'm building X" / "called X"
       var patterns = [
         /i'?m (?:working on|building|making|creating) (?:a |an |the )?(?:website|app|game|project|tool)?\s*(?:called |named )?['"]?([A-Za-z][\w \-]{1,40})['"]?/i,
-        /my (?:project|site|app|website|game) (?:called |named )?['"]?([A-Za-z][\w \-]{1,40})['"]?/i,
-        /(?:called|named) ['"]?([A-Z][\w \-]{1,40})['"]?/
+        /my (?:project|site|app|website|game) (?:called |named )?['"]?([A-Za-z][\w \-]{1,40})['"]?/i
       ];
       for (var i = 0; i < patterns.length; i++) {
         var m = text.match(patterns[i]);
-        if (m && m[1]) {
-          var name = m[1].trim();
-          // Ignore obvious non-project words
-          if (/^(it|this|that|them|us|you|me|something|anything)$/i.test(name)) continue;
+        if (!m || !m[1]) continue;
+        var name = m[1].trim();
+        if (/^(it|this|that|them|us|you|me|something|anything)$/i.test(name)) continue;
 
-          var existing = profile.projects[name];
-          if (!existing) {
-            profile.projects[name] = {
-              name: name,
-              description: null,
-              technologies: [],
-              status: "active",
-              lastMentioned: Date.now(),
-              confidence: 0.55,
-              mentions: 1
-            };
-            log("[USER] Project tracked:", name);
-            save();
-          } else {
-            existing.mentions++;
-            existing.lastMentioned = Date.now();
-            existing.confidence = Math.min(0.95, existing.confidence + 0.15);
-            save();
-          }
-          // Also detect technologies mentioned nearby
-          for (var j = 0; j < TOPIC_KEYWORDS.length; j++) {
-            var tech = TOPIC_KEYWORDS[j];
-            if (new RegExp("\\b" + tech.replace(/[.*+?^${}()|[\]\\]/g, "\\$&") + "\\b", "i").test(text)) {
-              if (profile.projects[name].technologies.indexOf(tech) === -1) {
-                profile.projects[name].technologies.push(tech);
-              }
-            }
-          }
+        if (!isPlainObject(profile.projects)) profile.projects = {};
+        var existing = isPlainObject(profile.projects[name]) ? profile.projects[name] : null;
+
+        if (!existing) {
+          profile.projects[name] = {
+            name: name, description: null, technologies: [],
+            status: "active", lastMentioned: Date.now(),
+            confidence: 0.55, mentions: 1
+          };
+          log("[USER] Project tracked:", name);
+        } else {
+          existing.mentions = (existing.mentions || 1) + 1;
+          existing.lastMentioned = Date.now();
+          existing.confidence = Math.min(0.95, (existing.confidence || 0.5) + 0.15);
+        }
+
+        var techs = profile.projects[name].technologies;
+        if (!Array.isArray(techs)) techs = profile.projects[name].technologies = [];
+        for (var j = 0; j < TOPIC_KEYWORDS.length; j++) {
+          var topic = TOPIC_KEYWORDS[j];
+          var re = new RegExp("\\b" + topic.replace(/[.*+?^${}()|[\]\\]/g, "\\$&") + "\\b", "i");
+          if (re.test(text) && techs.indexOf(topic) === -1) techs.push(topic);
         }
       }
     }
 
     function scanInterests(text) {
+      if (!isPlainObject(profile.interests)) profile.interests = {};
       for (var i = 0; i < TOPIC_KEYWORDS.length; i++) {
         var topic = TOPIC_KEYWORDS[i];
         var re = new RegExp("\\b" + topic.replace(/[.*+?^${}()|[\]\\]/g, "\\$&") + "\\b", "i");
-        if (re.test(text)) {
-          var cur = profile.interests[topic];
-          if (!cur) {
-            profile.interests[topic] = {
-              confidence: 0.25,
-              source: "inferred",
-              ts: Date.now(),
-              mentions: 1
-            };
-          } else {
-            cur.mentions = (cur.mentions || 1) + 1;
-            cur.ts = Date.now();
-            // Increase confidence with repeated mentions
-            cur.confidence = Math.min(0.95, cur.confidence + 0.10);
-            if (cur.confidence >= 0.60) cur.source = "strong";
-            if (cur.confidence >= 0.80) log("[USER] Strong interest detected:", topic);
-          }
+        if (!re.test(text)) continue;
+        var cur = profile.interests[topic];
+        if (!isPlainObject(cur)) {
+          profile.interests[topic] = {
+            confidence: 0.25, source: "inferred",
+            ts: Date.now(), mentions: 1
+          };
+        } else {
+          cur.mentions = (cur.mentions || 1) + 1;
+          cur.ts = Date.now();
+          cur.confidence = Math.min(0.95, (cur.confidence || 0.25) + 0.10);
+          if (cur.confidence >= 0.60) cur.source = "strong";
         }
       }
-      save();
     }
 
     function scanSkills(text) {
-      // Explicit level statements
       var rules = [
         { re: /i'?m (?:still )?learning ([\w\-\.]+)/i, level: "beginner", conf: 0.85 },
-        { re: /i'?m new to ([\w\-\.]+)/i,              level: "beginner", conf: 0.9 },
-        { re: /i don'?t know ([\w\-\.]+) (?:well|yet)/i, level: "beginner", conf: 0.7 },
-        { re: /i know ([\w\-\.]+) (?:pretty )?well/i,  level: "intermediate", conf: 0.7 },
-        { re: /i'?ve been (?:using|doing|working with) ([\w\-\.]+) for (?:a while|years)/i, level: "advanced", conf: 0.8 },
-        { re: /i built .* in ([\w\-\.]+)/i,             level: "intermediate", conf: 0.6 }
+        { re: /i'?m new to ([\w\-\.]+)/i,              level: "beginner", conf: 0.90 },
+        { re: /i don'?t know ([\w\-\.]+) (?:well|yet)/i, level: "beginner", conf: 0.70 },
+        { re: /i know ([\w\-\.]+) (?:pretty )?well/i,  level: "intermediate", conf: 0.70 },
+        { re: /i'?ve been (?:using|doing|working with) ([\w\-\.]+) for (?:a while|years)/i, level: "advanced", conf: 0.80 }
       ];
       for (var i = 0; i < rules.length; i++) {
         var m = text.match(rules[i].re);
-        if (m && m[1]) {
-          var topic = m[1].toLowerCase();
-          if (TOPIC_KEYWORDS.indexOf(topic) !== -1) {
-            recordObservation({
-              category: "skill",
-              key: topic,
-              value: rules[i].level,
-              source: "explicit",
-              confidence: rules[i].conf
-            });
-          }
-        }
+        if (!m || !m[1]) continue;
+        var topic = m[1].toLowerCase();
+        if (TOPIC_KEYWORDS.indexOf(topic) === -1) continue;
+        recordObservation({
+          category: "skill", key: topic,
+          value: rules[i].level, source: "explicit",
+          confidence: rules[i].conf
+        });
       }
     }
 
     function scanCommunicationStyle(text, ctx) {
-      // Only infer these gradually. Each evidence +0.08, cap 0.9.
+      if (!ctx) return;
+
       function reinforce(cat, key, value) {
-        var bucket = categoryBucket(cat);
-        var cur = bucket[key];
+        var bucket = bucketFor(cat);
+        if (!bucket) return;
+        var cur = safeEntry(bucket, key);
         if (!cur || cur.value !== value) {
-          // New value — start fresh with low confidence
           bucket[key] = { value: value, confidence: 0.30, source: "inferred", ts: Date.now(), evidence: 1 };
-          log("[USER] Style observation: " + key + " = " + value + " (0.30)");
         } else {
-          cur.confidence = Math.min(0.90, cur.confidence + 0.08);
+          cur.confidence = Math.min(0.90, (cur.confidence || 0.3) + 0.08);
           cur.evidence = (cur.evidence || 1) + 1;
           cur.ts = Date.now();
         }
       }
 
-      // Language style
       reinforce("communicationStyle", "language", ctx.languageStyle);
-
-      // Message length
       reinforce("communicationStyle", "messageLength", ctx.length);
+      if (ctx.slang && ctx.slang.length > 0) reinforce("communicationStyle", "usesSlang", "yes");
+      if (ctx.emojis && ctx.emojis.length > 0) reinforce("communicationStyle", "usesEmojis", "yes");
 
-      // Slang usage
-      if (ctx.slang.length > 0) reinforce("communicationStyle", "usesSlang", "yes");
-
-      // Emoji usage
-      if (ctx.emojis.length > 0) reinforce("communicationStyle", "usesEmojis", "yes");
-
-      // Formality
       var isCasual = ctx.languageStyle === "casual_english" || ctx.languageStyle === "taglish" ||
                      /\b(?:bro|dude|bruh|yo|nah|bet|lol)\b/i.test(text);
       if (isCasual) reinforce("communicationStyle", "formality", "casual");
@@ -1486,54 +1534,45 @@ main { max-width: 1280px; margin: 0 auto; padding: 28px 22px 60px; }
         reinforce("communicationStyle", "formality", "polite");
       }
 
-      // Humor style — inferred from tone
       if (ctx.tone === "joking" || ctx.tone === "playful") {
         reinforce("communicationStyle", "humorStyle", "playful");
       }
-
-      save();
     }
 
     function scanFeedback(text) {
-      // Detect positive / negative reaction
-      if (LEARNING_SIGNALS.positive.test(text)) {
-        // Reinforce whatever style preference was last updated
-        reinforceRecentPreference(0.10);
-      }
-      if (LEARNING_SIGNALS.negative.test(text)) {
-        reinforceRecentPreference(-0.15);
-      }
+      if (LEARNING_SIGNALS.positive.test(text)) reinforceRecentPreference(0.10);
+      if (LEARNING_SIGNALS.negative.test(text)) reinforceRecentPreference(-0.15);
     }
 
     function reinforceRecentPreference(delta) {
+      if (!isPlainObject(profile.preferences)) return;
       var items = [];
-      for (var k in profile.preferences) items.push({ key: k, ts: profile.preferences[k].ts });
+      for (var k in profile.preferences) {
+        var e = profile.preferences[k];
+        if (isPlainObject(e) && typeof e.ts === "number") items.push({ key: k, ts: e.ts });
+      }
       items.sort(function (a, b) { return b.ts - a.ts; });
       if (!items.length) return;
-      var top = profile.preferences[items[0].key];
-      if (top.source === "explicit") return;
+      var top = safeEntry(profile.preferences, items[0].key);
+      if (!top || top.source === "explicit") return;
       top.confidence = Math.max(0, Math.min(0.95, top.confidence + delta));
     }
 
-    /* ---------- Read accessors ---------- */
+    /* -------- Read accessors -------- */
     function getProfile()      { return JSON.parse(JSON.stringify(profile)); }
     function getPreferences()  { return JSON.parse(JSON.stringify(profile.preferences)); }
     function getInterests()    { return JSON.parse(JSON.stringify(profile.interests)); }
     function getProjects()     { return JSON.parse(JSON.stringify(profile.projects)); }
     function getSkills()       { return JSON.parse(JSON.stringify(profile.skills)); }
     function getTerminology()  { return JSON.parse(JSON.stringify(profile.terminology)); }
-    function getObservations() { return profile.observations.slice(); }
+    function getObservations() { return Array.isArray(profile.observations) ? profile.observations.slice() : []; }
     function getMetrics()      { return Object.assign({}, profile.metrics); }
 
-    /* ---------- Explicit remember / forget ---------- */
+    /* -------- Explicit remember / forget -------- */
     function remember(key, value) {
-      // Map friendly keys to preference entries
       recordObservation({
-        category: "preference",
-        key: key,
-        value: value,
-        source: "explicit",
-        confidence: CONFIDENCE.EXPLICIT
+        category: "preference", key: key, value: value,
+        source: "explicit", confidence: CONFIDENCE.EXPLICIT
       });
     }
 
@@ -1541,19 +1580,16 @@ main { max-width: 1280px; margin: 0 auto; padding: 28px 22px 60px; }
       var buckets = ["communicationStyle","preferences","interests","skills","projects","terminology","interactionPreferences"];
       var removed = [];
       for (var i = 0; i < buckets.length; i++) {
-        if (profile[buckets[i]][key]) {
+        if (isPlainObject(profile[buckets[i]]) && profile[buckets[i]][key] !== undefined) {
           delete profile[buckets[i]][key];
           removed.push(buckets[i] + "." + key);
         }
       }
-      if (removed.length) { save(); log("Forgot:", removed.join(", ")); }
+      if (removed.length) { save(); log("[USER] Forgot:", removed.join(", ")); }
       return removed;
     }
 
-    function forgetAll() { clearMemory(); }
-
-    /* ---------- Apply preferences to a response context ---------- */
-    // Priority: current request > conversation context > explicit > inferred.
+    /* -------- Apply preferences -------- */
     function applyUserPreferences(conversationCtx, settings) {
       var result = {
         responseLength: (settings && settings.responseLength) || "auto",
@@ -1564,53 +1600,52 @@ main { max-width: 1280px; margin: 0 auto; padding: 28px 22px 60px; }
         notes: []
       };
 
-      // Explicit profile entries override "auto" settings
-      var prefs = profile.preferences;
+      var prefs = isPlainObject(profile.preferences) ? profile.preferences : {};
 
-      // Response length
-      if (prefs.response_length && prefs.response_length.confidence >= CONFIDENCE.POSSIBLE) {
-        if (result.responseLength === "auto") {
-          result.responseLength = prefs.response_length.value;
-          result.notes.push("response_length=" + prefs.response_length.value + " (profile, " + prefs.response_length.source + ")");
-        }
+      var rl = safeEntry(prefs, "response_length");
+      if (rl && rl.confidence >= CONFIDENCE.POSSIBLE && result.responseLength === "auto") {
+        result.responseLength = rl.value;
+        result.notes.push("response_length=" + rl.value + " (profile, " + rl.source + ")");
       }
 
-      // Humor
-      if (prefs.humor_preference && prefs.humor_preference.confidence >= CONFIDENCE.POSSIBLE) {
-        if (prefs.humor_preference.value === "none") {
+      var hp = safeEntry(prefs, "humor_preference");
+      if (hp && hp.confidence >= CONFIDENCE.POSSIBLE) {
+        if (hp.value === "none") {
           result.humorLevel = "none";
           result.notes.push("humor=none (profile)");
         } else if (result.humorLevel === "normal") {
-          result.humorLevel = prefs.humor_preference.value;
-          result.notes.push("humor=" + prefs.humor_preference.value + " (profile)");
+          result.humorLevel = hp.value;
+          result.notes.push("humor=" + hp.value + " (profile)");
         }
       }
 
-      // Explanation complexity
-      if (prefs.explanation_complexity && prefs.explanation_complexity.confidence >= CONFIDENCE.POSSIBLE) {
-        result.explanationDepth = prefs.explanation_complexity.value;
-        result.notes.push("explanation=" + prefs.explanation_complexity.value + " (profile)");
+      var ec = safeEntry(prefs, "explanation_complexity");
+      if (ec && ec.confidence >= CONFIDENCE.POSSIBLE) {
+        result.explanationDepth = ec.value;
+        result.notes.push("explanation=" + ec.value + " (profile)");
       }
 
-      if (prefs.likes_examples) result.likesExamples = prefs.likes_examples.value;
-      if (prefs.likes_steps)    result.likesSteps = prefs.likes_steps.value;
+      var le = safeEntry(prefs, "likes_examples");
+      if (le) result.likesExamples = le.value;
 
-      // CURRENT MESSAGE OVERRIDE
-      if (conversationCtx) {
-        // If the user asks for more detail today, honour that even if profile says short.
-        if (/\b(?:in detail|explain more|elaborate|detailed)\b/i.test(conversationCtx.original)) {
+      var ls = safeEntry(prefs, "likes_steps");
+      if (ls) result.likesSteps = ls.value;
+
+      // Current message always overrides stored preference.
+      if (conversationCtx && conversationCtx.original) {
+        var src = conversationCtx.original;
+        if (/\b(?:in detail|explain more|elaborate|detailed)\b/i.test(src)) {
           result.responseLength = "detailed";
           result.notes.push("override: user asked for detail");
         }
-        if (/\b(?:shorter|brief|just tell me|just the answer|tldr)\b/i.test(conversationCtx.original)) {
+        if (/\b(?:shorter|brief|just tell me|just the answer|tldr)\b/i.test(src)) {
           result.responseLength = "short";
           result.notes.push("override: user asked for short");
         }
-        if (/\b(?:serious|no jokes|be serious)\b/i.test(conversationCtx.original)) {
+        if (/\b(?:serious|no jokes|be serious)\b/i.test(src)) {
           result.humorLevel = "none";
           result.notes.push("override: serious mode");
         }
-        // If the message itself is very short, bias toward short replies
         if (conversationCtx.length === "short" && result.responseLength === "auto") {
           result.responseLength = "short";
           result.notes.push("override: message very short");
@@ -1620,76 +1655,124 @@ main { max-width: 1280px; margin: 0 auto; padding: 28px 22px 60px; }
       return result;
     }
 
-    /* ---------- Build prompt context block ---------- */
+    /* --------------------------------------------------------
+       PROMPT CONTEXT — fully defensive
+       Never assumes an entry exists. Never touches .value
+       without safeEntry() confirming the object first.
+       -------------------------------------------------------- */
     function buildPromptContext() {
-      var lines = ["=== USER UNDERSTANDING (learned quietly, do not announce) ==="];
+      try {
+        var lines = ["=== USER UNDERSTANDING (learned quietly, do not announce) ==="];
 
-      function addIf(cond, line) { if (cond) lines.push("  - " + line); }
+        function push(line) { lines.push("  - " + line); }
 
-      var prefs = profile.preferences;
-      var style = profile.communicationStyle;
-
-      addIf(style.language && style.language.confidence >= CONFIDENCE.POSSIBLE,
-        "language: " + style.language.value + " (" + style.language.confidence.toFixed(2) + ")");
-      addIf(style.formality && style.formality.confidence >= CONFIDENCE.POSSIBLE,
-        "formality: " + style.formality.value + " (" + style.formality.confidence.toFixed(2) + ")");
-      addIf(style.messageLength && style.messageLength.confidence >= CONFIDENCE.LIKELY,
-        "typical message length: " + style.messageLength.value);
-      addIf(style.usesSlang && style.usesSlang.confidence >= CONFIDENCE.POSSIBLE,
-        "uses slang: yes");
-      addIf(style.usesEmojis && style.usesEmojis.confidence >= CONFIDENCE.POSSIBLE,
-        "uses emojis: yes");
-      addIf(style.humorStyle && style.humorStyle.confidence >= CONFIDENCE.POSSIBLE,
-        "humor style: " + style.humorStyle.value);
-
-      addIf(prefs.response_length && prefs.response_length.confidence >= CONFIDENCE.POSSIBLE,
-        "prefers responses: " + prefs.response_length.value + " (" + prefs.response_length.source + ")");
-      addIf(prefs.humor_preference && prefs.humor_preference.confidence >= CONFIDENCE.POSSIBLE,
-        "humor preference: " + prefs.humor_preference.value);
-      addIf(prefs.explanation_complexity && prefs.explanation_complexity.confidence >= CONFIDENCE.POSSIBLE,
-        "explanation complexity: " + prefs.explanation_complexity.value);
-      addIf(prefs.likes_examples && prefs.likes_examples.confidence >= CONFIDENCE.POSSIBLE,
-        "likes examples: yes");
-      addIf(prefs.likes_steps && prefs.likes_steps.confidence >= CONFIDENCE.POSSIBLE,
-        "likes step-by-step: yes");
-
-      var interestKeys = Object.keys(profile.interests);
-      var strongInterests = interestKeys.filter(function (k) { return profile.interests[k].confidence >= CONFIDENCE.POSSIBLE; });
-      if (strongInterests.length) lines.push("  - interests (recurring): " + strongInterests.join(", "));
-
-      var projectKeys = Object.keys(profile.projects);
-      if (projectKeys.length) {
-        var recent = projectKeys.sort(function (a, b) {
-          return (profile.projects[b].lastMentioned || 0) - (profile.projects[a].lastMentioned || 0);
-        }).slice(0, 3);
-        lines.push("  - active projects: " + recent.join(", "));
-      }
-
-      var skillKeys = Object.keys(profile.skills);
-      if (skillKeys.length) {
-        var skillLines = skillKeys.map(function (k) {
-          return k + " (" + profile.skills[k].value + ")";
-        });
-        lines.push("  - known skill levels: " + skillLines.join(", "));
-      }
-
-      var termKeys = Object.keys(profile.terminology);
-      if (termKeys.length) {
-        for (var i = 0; i < termKeys.length; i++) {
-          lines.push("  - terminology: \"" + termKeys[i] + "\" = " + profile.terminology[termKeys[i]].value);
+        // ---- Communication style ----
+        if (isPlainObject(profile.communicationStyle)) {
+          var style = profile.communicationStyle;
+          var lang = safeEntry(style, "language");
+          if (lang && lang.confidence >= CONFIDENCE.POSSIBLE) {
+            push("language: " + lang.value + " (" + lang.confidence.toFixed(2) + ")");
+          }
+          var form = safeEntry(style, "formality");
+          if (form && form.confidence >= CONFIDENCE.POSSIBLE) {
+            push("formality: " + form.value + " (" + form.confidence.toFixed(2) + ")");
+          }
+          var ml = safeEntry(style, "messageLength");
+          if (ml && ml.confidence >= CONFIDENCE.LIKELY) {
+            push("typical message length: " + ml.value);
+          }
+          var slang = safeEntry(style, "usesSlang");
+          if (slang && slang.confidence >= CONFIDENCE.POSSIBLE) push("uses slang: yes");
+          var emojis = safeEntry(style, "usesEmojis");
+          if (emojis && emojis.confidence >= CONFIDENCE.POSSIBLE) push("uses emojis: yes");
+          var hs = safeEntry(style, "humorStyle");
+          if (hs && hs.confidence >= CONFIDENCE.POSSIBLE) push("humor style: " + hs.value);
         }
+
+        // ---- Preferences ----
+        if (isPlainObject(profile.preferences)) {
+          var prefs = profile.preferences;
+          var rl = safeEntry(prefs, "response_length");
+          if (rl && rl.confidence >= CONFIDENCE.POSSIBLE) {
+            push("prefers responses: " + rl.value + " (" + rl.source + ")");
+          }
+          var hp = safeEntry(prefs, "humor_preference");
+          if (hp && hp.confidence >= CONFIDENCE.POSSIBLE) {
+            push("humor preference: " + hp.value);
+          }
+          var ec = safeEntry(prefs, "explanation_complexity");
+          if (ec && ec.confidence >= CONFIDENCE.POSSIBLE) {
+            push("explanation complexity: " + ec.value);
+          }
+          if (safeEntry(prefs, "likes_examples")) push("likes examples: yes");
+          if (safeEntry(prefs, "likes_steps"))    push("likes step-by-step: yes");
+        }
+
+        // ---- Interests ----
+        if (isPlainObject(profile.interests)) {
+          var strong = [];
+          for (var iKey in profile.interests) {
+            var iEntry = profile.interests[iKey];
+            if (isPlainObject(iEntry) && typeof iEntry.confidence === "number" &&
+                iEntry.confidence >= CONFIDENCE.POSSIBLE) {
+              strong.push(iKey);
+            }
+          }
+          if (strong.length) push("interests (recurring): " + strong.join(", "));
+        }
+
+        // ---- Projects ----
+        if (isPlainObject(profile.projects)) {
+          var projKeys = Object.keys(profile.projects).filter(function (k) {
+            return isPlainObject(profile.projects[k]);
+          });
+          if (projKeys.length) {
+            projKeys.sort(function (a, b) {
+              var al = profile.projects[a].lastMentioned || 0;
+              var bl = profile.projects[b].lastMentioned || 0;
+              return bl - al;
+            });
+            push("active projects: " + projKeys.slice(0, 3).join(", "));
+          }
+        }
+
+        // ---- Skills ----
+        if (isPlainObject(profile.skills)) {
+          var skillBits = [];
+          for (var sKey in profile.skills) {
+            var sEntry = profile.skills[sKey];
+            if (isPlainObject(sEntry) && "value" in sEntry) {
+              skillBits.push(sKey + " (" + sEntry.value + ")");
+            }
+          }
+          if (skillBits.length) push("known skill levels: " + skillBits.join(", "));
+        }
+
+        // ---- Terminology ----
+        if (isPlainObject(profile.terminology)) {
+          for (var tKey in profile.terminology) {
+            var tEntry = profile.terminology[tKey];
+            if (isPlainObject(tEntry) && "value" in tEntry) {
+              push('terminology: "' + tKey + '" = ' + tEntry.value);
+            }
+          }
+        }
+
+        // ---- Always-present guidance ----
+        lines.push("");
+        lines.push("  Rules for using this:");
+        lines.push("    - Adapt naturally. Do NOT announce it.");
+        lines.push("    - Current user message overrides stored preferences.");
+        lines.push("    - Never invent user facts. If it's not here, don't assume it.");
+
+        return lines.join("\n");
+      } catch (e) {
+        // Absolute last resort — a bug here can never break the chat.
+        warn("[USER] buildPromptContext failed (returning empty context):", e && e.message);
+        return "=== USER UNDERSTANDING ===\n  (unavailable this turn — proceed normally)";
       }
-
-      lines.push("");
-      lines.push("  Rules for using this:");
-      lines.push("    - Adapt naturally. Do NOT announce it.");
-      lines.push("    - Current user message overrides stored preferences.");
-      lines.push("    - Never invent user facts. If it's not here, don't assume it.");
-
-      return lines.join("\n");
     }
 
-    /* ---------- Public API ---------- */
     return {
       learnFromMessage: learnFromMessage,
       recordObservation: recordObservation,
@@ -2137,6 +2220,7 @@ main { max-width: 1280px; margin: 0 auto; padding: 28px 22px 60px; }
       var lines = ["What I've learned (profile v" + p.version + "):"];
 
       function showBucket(label, bucket, formatter) {
+        if (!bucket || typeof bucket !== "object") return;
         var keys = Object.keys(bucket);
         if (!keys.length) return;
         lines.push("");
@@ -2146,20 +2230,23 @@ main { max-width: 1280px; margin: 0 auto; padding: 28px 22px 60px; }
         }
       }
 
-      showBucket("Communication style", p.communicationStyle, function (k, v) {
-        return k + ": " + v.value + "  (confidence " + v.confidence.toFixed(2) + ", " + v.source + ")";
-      });
-      showBucket("Preferences", p.preferences, function (k, v) {
-        return k + ": " + v.value + "  (confidence " + v.confidence.toFixed(2) + ", " + v.source + ")";
-      });
+      function fmtEntry(k, v) {
+        var conf = (typeof v.confidence === "number") ? v.confidence.toFixed(2) : "—";
+        var src = v.source || "—";
+        return k + ": " + v.value + "  (confidence " + conf + ", " + src + ")";
+      }
+
+      showBucket("Communication style", p.communicationStyle, fmtEntry);
+      showBucket("Preferences", p.preferences, fmtEntry);
       showBucket("Interests", p.interests, function (k, v) {
-        return k + "  (confidence " + v.confidence.toFixed(2) + ", mentions " + (v.mentions || 1) + ")";
+        var conf = (typeof v.confidence === "number") ? v.confidence.toFixed(2) : "—";
+        return k + "  (confidence " + conf + ", mentions " + (v.mentions || 1) + ")";
       });
-      showBucket("Skills", p.skills, function (k, v) {
-        return k + ": " + v.value + "  (confidence " + v.confidence.toFixed(2) + ")";
-      });
+      showBucket("Skills", p.skills, fmtEntry);
       showBucket("Projects", p.projects, function (k, v) {
-        return k + (v.technologies && v.technologies.length ? " [" + v.technologies.join(", ") + "]" : "") + "  (confidence " + v.confidence.toFixed(2) + ")";
+        var conf = (typeof v.confidence === "number") ? v.confidence.toFixed(2) : "—";
+        var techs = (v.technologies && v.technologies.length) ? " [" + v.technologies.join(", ") + "]" : "";
+        return k + techs + "  (confidence " + conf + ")";
       });
       showBucket("Terminology", p.terminology, function (k, v) {
         return '"' + k + '" = ' + v.value;
@@ -2181,7 +2268,8 @@ main { max-width: 1280px; margin: 0 auto; padding: 28px 22px 60px; }
       if (!keys.length) return { message: "I haven't learned any preferences yet.", mood: "idle" };
       var lines = keys.map(function (k) {
         var v = prefs[k];
-        return "  • " + k + " = " + v.value + "  (" + v.source + ", " + v.confidence.toFixed(2) + ")";
+        var conf = (typeof v.confidence === "number") ? v.confidence.toFixed(2) : "—";
+        return "  • " + k + " = " + v.value + "  (" + v.source + ", " + conf + ")";
       });
       return { message: "Learned preferences:\n" + lines.join("\n"), mood: "idle" };
     });
@@ -2305,7 +2393,7 @@ main { max-width: 1280px; margin: 0 auto; padding: 28px 22px 60px; }
       dispatch("zimelia:contextChange", { conversationContext: conversationCtx });
     }
 
-    // 2. Personal slang registration (session)
+    // 2. Personal slang (session)
     var psRegistration = ConversationLanguage.scanPersonalSlang(text);
     if (psRegistration) {
       var teachReply = { message: "Got it — I'll remember that \"" + psRegistration.key + "\" means " + psRegistration.value + " for this session.", mood: "happy" };
@@ -2319,9 +2407,14 @@ main { max-width: 1280px; margin: 0 auto; padding: 28px 22px 60px; }
     // 3. Session memory extraction
     extractSessionMemories(text);
 
-    // 4. Adaptive learning (the new user system)
-    UserSystem.learnFromMessage(text, conversationCtx);
-    dispatch("zimelia:userLearned", { profile: UserSystem.getMetrics() });
+    // 4. Adaptive learning — isolated so a failure here cannot
+    //    prevent the chat from responding.
+    try {
+      UserSystem.learnFromMessage(text, conversationCtx);
+      dispatch("zimelia:userLearned", { profile: UserSystem.getMetrics() });
+    } catch (err) {
+      warn("User learning skipped (chat continues):", err && err.message);
+    }
 
     // 5. Topic context
     var context = detectContext(text);
@@ -2330,8 +2423,21 @@ main { max-width: 1280px; margin: 0 auto; padding: 28px 22px 60px; }
 
     // 6. Apply preferences to response
     var baseSettings = SettingsManager.all();
-    var effective = UserSystem.applyUserPreferences(conversationCtx, baseSettings);
-    if (effective.notes.length) log("Adaptive response settings:", effective.notes.join(" | "));
+    var effective;
+    try {
+      effective = UserSystem.applyUserPreferences(conversationCtx, baseSettings);
+    } catch (err) {
+      warn("User preference application failed (using defaults):", err && err.message);
+      effective = {
+        responseLength: baseSettings.responseLength || "auto",
+        humorLevel: baseSettings.humorLevel || "normal",
+        explanationDepth: "normal",
+        likesExamples: null,
+        likesSteps: null,
+        notes: []
+      };
+    }
+    if (effective.notes && effective.notes.length) log("Adaptive response settings:", effective.notes.join(" | "));
 
     // 7. Thinking state
     StateManager.set("thinking");
@@ -2340,8 +2446,16 @@ main { max-width: 1280px; margin: 0 auto; padding: 28px 22px 60px; }
     // 8. Record user turn
     ConversationManager.add("user", text);
 
-    // 9. Ask the AI
-    var userContext = UserSystem.buildPromptContext();
+    // 9. Ask the AI. Prompt context is built defensively — a bug in
+    //    the learning layer cannot stop the message from being sent.
+    var userContext = "";
+    try {
+      userContext = UserSystem.buildPromptContext();
+    } catch (err) {
+      warn("Prompt context unavailable (chat continues):", err && err.message);
+      userContext = "";
+    }
+
     return sendMessageToAI(text, {
       context: context,
       humorLevel: effective.humorLevel,
@@ -2420,7 +2534,6 @@ main { max-width: 1280px; margin: 0 auto; padding: 28px 22px 60px; }
       personalSlang: ConversationLanguage.getPersonalSlang
     },
 
-    // User system — the adaptive learning API
     user: {
       getProfile: UserSystem.getProfile,
       getPreferences: UserSystem.getPreferences,
@@ -2738,7 +2851,7 @@ main { max-width: 1280px; margin: 0 auto; padding: 28px 22px 60px; }
       var p = UserSystem.getProfile();
       var c = 0;
       ["communicationStyle","preferences","interests","skills","projects","terminology","interactionPreferences"].forEach(function (b) {
-        c += Object.keys(p[b]).length;
+        if (p[b] && typeof p[b] === "object") c += Object.keys(p[b]).length;
       });
       closeSettings();
       Zimelia.sendMessage("/profile");
@@ -2802,7 +2915,7 @@ main { max-width: 1280px; margin: 0 auto; padding: 28px 22px 60px; }
     var p = UserSystem.getProfile();
     var total = 0;
     ["communicationStyle","preferences","interests","skills","projects","terminology","interactionPreferences"].forEach(function (b) {
-      total += Object.keys(p[b]).length;
+      if (p[b] && typeof p[b] === "object") total += Object.keys(p[b]).length;
     });
     if (statusLearning) {
       statusLearning.textContent = total ? ("learning (" + total + " items)") : "listening";
