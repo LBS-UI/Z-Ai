@@ -191,8 +191,7 @@ main { max-width: 1280px; margin: 0 auto; padding: 28px 22px 60px; }
 .stage { position: relative; display: flex; flex-direction: column; align-items: center; gap: 14px; }
 .stage__frame { position: relative; width: 100%; max-width: 480px; aspect-ratio: 1 / 1; border-radius: var(--radius-lg); overflow: hidden; background: #1a1030; border: 1px solid var(--line); box-shadow: 0 0 0 1px rgba(167, 139, 250, 0.08) inset, var(--glow-purple), 0 30px 60px -30px rgba(0, 0, 0, 0.9); animation: stageIn 0.9s cubic-bezier(0.16, 1, 0.3, 1) both; }
 @keyframes stageIn { from { opacity: 0; transform: translateY(18px) scale(0.97); } to { opacity: 1; transform: translateY(0) scale(1); } }
-.stage__img { width: 100%; height: 100%; object-fit: contain; object-position: center; image-rendering: pixelated; image-rendering: crisp-edges; transition: opacity 0.3s ease; background: #1a1030; visibility: visible !important; opacity: 1 !important; }
-.stage__img.is-switching { opacity: 0; transform: scale(1.03); }
+.sprite-holder { position: absolute; inset: 0; background-repeat: no-repeat; background-position: center; background-size: contain; image-rendering: pixelated; image-rendering: crisp-edges; transition: opacity 0.25s ease; }
 .stage__placeholder { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; background: repeating-linear-gradient(45deg, rgba(124, 58, 237, 0.08) 0 14px, transparent 14px 28px), linear-gradient(160deg, #1A1030, #0B0714); color: var(--text-dim); text-align: center; padding: 24px; }
 .stage__placeholder-mark { font-size: 4rem; font-weight: 800; color: var(--purple-3); opacity: 0.5; line-height: 1; }
 .stage__placeholder-text { font-size: 0.72rem; letter-spacing: 0.22em; text-transform: uppercase; }
@@ -389,17 +388,12 @@ main { max-width: 1280px; margin: 0 auto; padding: 28px 22px 60px; }
   <section class="hero" id="home" aria-labelledby="heroTitle">
     <div class="hero__stage-col">
       <div class="stage">
-        <div class="stage__frame">
-          <img id="zimeliaImage" class="stage__img" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAYAAACqaXHeAAAJq0lEQVR4nO2be2wU1xXGfxMY413W3oftyuvYBJbg1CylWR4NJeGhylUSoqpAg9I2IYAUHpJdhSRVm7TpQ00orRSlQbXVEBpRAq2UEjWUpKQRVsrTJU2MG4rBPIwBE9uSH7t+ZL14MNM/xjOe2Z21d72zTtr4k1bevffOvfd895x77j1nDOMYx+cawtgMIsrJtJeRxmRekGYCVMFnFs0G4FLzZQBKfDO5Hglr7QpyHQBkO0WKCyfzqz0HgLEhIl0DyAIigRkLALgeCWvC61HimwlAKNTJ9MJcrXzabXam3ZrLM5W7ERDTSoTlHQuI8sqlS6hvCNIZChIKd8W0cdmdAITCXZT4ZpLjuCWmTbZTZJ7fS47bxcbnX04bCbEjpwABUX7yu49S3xAEwONy4yuYisvu1D4qPC43Xk8+oVBn3P4aP26nIxiiv/U/Se8jicIyAgRE+bnyJ/jHB+dN6z0uNx6XG1BWviDXwfTCXIPq65HjEgHo7upmZ0Vl2kiwhABV+MPH3zdVZ1VwAF/B1Lj9ZDtFxf5vsxvKGy9fBUgLCROt7Cwcvo7dPgmXXSQUlgCYlKkIYyRmKtlOMeF+yzeu4mawmVvcBchIVk7ZEgLk58qfAGDBXD+nzl40VE67dVLMA83tiop3hMyFyXFkAJDtzObJ8nWGOqm1noz8L8lWbYqWaUCwswOA2SW3A/D3o/8GhmwZhgSrbwhq382weMEsZn+5BIAJXW0MOPMAeOG5LXz/Jz+2aspA6m5Qfr78B7xz8Ah2+yRNeFAIuG/Rndzhs8c8tG1XNc9s+ho5zgyyHDbcbqexfucBfvbUw4ayiu17Db+37vmrFfNPXQPeOXgEUOxfVX89EfEQ7ouQ44yvBQChziB79lYZys5f+4R5fu8oZxsLy0ygpbOH6fYhe++LRADoCIYA+LCuJeaZ37/xPmA0k8fXLQOUFe/o7dfK1f2itq6F4sLJVk3bGgJaOnsAaLjWzvTCXMNGaCZ4XyTCu8fOmva1badyD9AL33hFuTeEw9cH+wxZMW3AYjcYjWiPoEftIDHTC3Pp7hrZtTVcazf9nipSJkBdfRUN19rxerLito+evPo7+kQ4kpCDl6RkpmqKtGoAJL5a+nbxjsd6WHUgStkN+vL8lkwkWVxqqwML3KClt8H/RYwT8GlP4NPGZ46Als7WMR0vrQQ0tV1NZ/eW4DOnAWONcQKs6misbdcqpEKA4RB0Y6A/oRPcZw2WaECyq28FUV8PLLEkQDoqAgREec6MRbhcHgAiA93kZilhq2jhGtvMw+TRIXH1942BftP2Zn0uvGNuyiSkrAGqq5t1e9Gonk9WGxrbzjMtr5hjp06T73WkfClKmgABUd7+7CZAyflJ9MRMwpaZSUtnKxMnxIa8zMwlGRJKAws1DWht6WVr2WqAUWtB0gRsf3aTFs2pa6oBkxuZGg6zEnqTKQ0sJDLQTfW5Gt6uusDWstWjNoVkCJAFRLkjGKK7S+LkhaMwKLwvz888v4tsp0hze6/xoSRVtChvimZWtszMuO1KAwuRkTh+7gRvV13gl2XfVoZLEgkRICDKrzz7PXZv2cx71Vepqq1WigfrHrp3KArssosxKq2uXiKqHtBFfNX8ISgBE33aTJdZEqrP1bBn/5lRmUNCESEZiQ9PX6TxSpiq2mp9qlrbDxovX6W65hK+gi8AaLu5gDEFpmaIo/N/ZlkiVciA06vFEM2elZGEuqYaflR5St5atppnKnfLJBgsGVED1NWPFl4tj4bdbkyFyUjayqkTn3abXcsMdYQkchwZFBdO1j4TJ2TQF+mL6bvurJJ2V5/dsPx+ZQjdWHv2n8Gb5UtEdmAEAgREefeWzez92ykO1h42vKQgI7GuvIw1D68A4PV3L+JxuU2zuzmODO0TXV7fEOSRVaWG8s3fuYf2njaljUskxyVSevcU8r0Odu47BsDTZQ/x6PK7+dbSUj0JwuDGnDCGNYHSwEJ+99pRjp87ofAxBFlqredmsJn29ma27aom4PdS3xBk8fxZHPngtKGf9WtWsGPXm9rvx9ctw2ZXIsf7D/8WQCNBLX9hz3t0d0k89uBdZDlsAFz+uIu/HDrMA6XzqTpcwwP33mVIqqjwuNy09MQUm2JYDQiHr8cV/vVXX+XFip1UbN+rvf/z54q1BGZNAWDihAxuMOQO169ZQfnGVdgybWzbeYAdu96kL6zMcvPP3zCM2xfuYWlgjrrZAuB2O7W+f/OHQ9htmVq+cHCf0UwhGTc87Ebhy/PLUdFXecPy+8lxZNDR26/tC9Pyign4vfziiW9qK+i/7ykiA92sXLqExx68C4COrn5++tIBSu+eMrQH9PZTdzaIv8RtMJGO3n52v/UvIgPdrF9eSo4jg2xnNu3BDF7802usXLpEW/3GK2EO1h5W5yn78vxcaqtLaBMc1gQa287HJCDUTUtNV4Hir3NcoiGR6bI7aenpoLhwMkdODJlEwO9lx74qnn5kmZb+OnnxAv6SrxjSYfo+6s4Gyfc64NonyiogUd8Q1F6vSwXDEiAjCSJZsoRk8K1qbk6vomDM59kybRDHDmUkzg8KA4rL1BNqhkTSZwyufrwLmBlGPAdI9AhEHS46em/S0vqxoV20AOopLl4is7WlV3OZxUXK5eae2bNi2nmzfFSfqyE/q8hw4VLs3EFze6+mCQIijW3nk3qlLtGjsDD4ob4hqL3lKSPFPeoW5DoQEDlUezKmTiSL6nM1NLf3akfnyEB33MFlJELhLkP7vkif9l39KyMJyb46Y1luUL8SKvKzimjtaYq5HxQXFRPtr2UkQ7vhdnJVzfVvn40WVkSEhDNNpwC0FVI/HpebzAnZqPXRiFcOxJwEozXEquSoJSGx4Sbj9eSb1vuL5sZ9rjMU1L7bMm0x9dH5hnjX8kSQLAHaantcbv0BZNgjqC/PH6PyKs40nTJ9kRoU4QfPIRouNV82BFpSEX7UDwqI8syi2fRFItFpatlfNBcwt+FLbXX48vyah1BJERC1V+pB0YDWniZNQ9Toc1PbVSTFt+o9U0op8lQejr53D54ZFOevD5nrV1Ett2VmagSopIGiETrTiHbBGtEWzN+aDoaBNvGPNq3FkzuZTyT44q8rTSahnDYFRM7+cAM9AwLzX6gYo/9mST/kjzatNRTc+fIfDUGVEerTijEhYN9b1wwFy79RqB97pPq04nOfHB0TDZgzY5GhoPbCCYMJzJmxyPBPVKm6tmTwqWiA1e/8p4Ix0YBXKv9pKNhQ9lVtbAFR3l55xFC/sWzx/9UmCOax+mifblY3jnGMI734L3td/fTeA08TAAAAAElFTkSuQmCC"
-               alt="Zimelia, a chibi AI assistant." />
-          <div class="stage__placeholder" id="stagePlaceholder" hidden>
-            <span class="stage__placeholder-mark" aria-hidden="true">Z</span>
-            <span class="stage__placeholder-text">image placeholder</span>
-            <span class="stage__placeholder-file" id="placeholderFile">assets/sprites/north.png</span>
-          </div>
+        <div class="stage__frame" id="spriteStage">
+          <div id="zimeliaSprite" class="sprite-holder" style="background-image:url(data:image/png;base64,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)"></div>
           <div class="stage__scan" aria-hidden="true"></div>
           <div class="stage__corners" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
         </div>
+</div>
         <span class="stage__badge">
           <span class="status-pill__dot" aria-hidden="true"></span>
           ZIMELIA · v<span id="versionBadge">0.7.0</span>
@@ -3180,7 +3174,7 @@ main { max-width: 1280px; margin: 0 auto; padding: 28px 22px 60px; }
 
   /* -------- 22. UI BINDINGS -------- */
   var root             = document.documentElement;
-  var zimeliaImage     = document.getElementById("zimeliaImage");
+  var zimeliaSprite    = document.getElementById("zimeliaSprite");
   var stagePlaceholder = document.getElementById("stagePlaceholder");
   var placeholderFile  = document.getElementById("placeholderFile");
   var statusState      = document.getElementById("statusState");
@@ -3252,33 +3246,22 @@ main { max-width: 1280px; margin: 0 auto; padding: 28px 22px 60px; }
     }
   }
   function loadCharacterImage(src, mood) {
-    if (!zimeliaImage) return;
+    if (!zimeliaSprite) return;
     var fileName = src.split("/").pop();
-    // Prefer embedded base64 if available
+    // Prefer embedded base64
     if (typeof SPRITE_DATA !== "undefined" && SPRITE_DATA[fileName]) {
       src = SPRITE_DATA[fileName];
     }
-    // Never hide a data URI on error
-    zimeliaImage.onerror = function () {
-      if (src.indexOf("data:") === 0) return;
-      showPlaceholder(fileName);
-    };
-    zimeliaImage.onload = function () { hidePlaceholder(); };
-    zimeliaImage.src = src;
-    zimeliaImage.style.visibility = "visible";
-    zimeliaImage.style.opacity = "1";
+    zimeliaSprite.style.backgroundImage = "url(" + src + ")";
+    zimeliaSprite.style.opacity = "1";
     hidePlaceholder();
-    zimeliaImage.alt = "Zimelia, chibi AI assistant. Current mood: " + ((mood && mood.label) || "idle") + ".";
-    zimeliaImage.classList.remove("is-switching");
   }
   function showPlaceholder(fileName) {
     if (stagePlaceholder) stagePlaceholder.hidden = false;
     if (placeholderFile) placeholderFile.textContent = ASSETS_PATH + fileName;
-    if (zimeliaImage) zimeliaImage.style.visibility = "hidden";
   }
   function hidePlaceholder() {
     if (stagePlaceholder) stagePlaceholder.hidden = true;
-    if (zimeliaImage) zimeliaImage.style.visibility = "visible";
   }
 
   var isTalking = false;
