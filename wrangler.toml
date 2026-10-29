@@ -1,8 +1,7 @@
 name = "zimelia"
 compatibility_date = "2026-10-29"
-pages_build_output_dir = "."
 
-# This is a static Pages site.
-# Deploy with:
-#   npx wrangler pages deploy . --project-name=zimelia
-# Do NOT use plain "wrangler deploy".
+# Static assets (works with both Pages and Workers deploy)
+[assets]
+directory = "."
+# binding = "ASSETS"  # only needed if you add a custom Worker later

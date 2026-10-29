@@ -1,20 +1,14 @@
-# Zimelia — Cloudflare Pages
+# Zimelia — Cloudflare Deploy
 
-## Why it failed
-Cloudflare tried `wrangler deploy` (Workers).  
-This is a static site, so it needs **Pages**.
+This version works with the command Cloudflare is running (`wrangler deploy`).
 
-## Correct deploy command
+## Deploy (CLI)
 ```bash
-npx wrangler pages deploy . --project-name=zimelia
+npx wrangler deploy
 ```
 
-## Or (easiest)
-1. Cloudflare Dashboard → Workers & Pages → Create → Pages → **Upload assets**
-2. Drag this folder (or its contents so `index.html` is at the root)
-3. Deploy
+## Or Dashboard
+Workers & Pages → Create → Pages → Upload assets → drag this folder.
 
-## After it’s live
-Open the site → Settings → Fish Audio Voice → paste your API key → Save.
-
-Sprites + talking north-smile work the same.
+## After deploy
+Open the site → Settings → Fish Audio Voice → paste your API key.
