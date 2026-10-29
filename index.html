@@ -186,7 +186,9 @@ p { margin: 0; }
 .nav__btn-label { display: inline; }
 
 main { max-width: 1280px; margin: 0 auto; padding: 28px 22px 60px; }
-.hero { display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr); gap: 28px; align-items: start; margin-bottom: 56px; }
+.hero { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr); gap: 28px; align-items: start; margin-bottom: 56px; }
+.hero__stage-col { order: 2; }
+.hero__side-col { order: 1; }
 .hero__stage-col, .hero__side-col { display: flex; flex-direction: column; gap: 20px; }
 .stage { position: relative; display: flex; flex-direction: column; align-items: center; gap: 14px; }
 .stage__frame { position: relative; width: 100%; max-width: 480px; aspect-ratio: 1 / 1; border-radius: var(--radius-lg); overflow: hidden; background: #1a1030; border: 1px solid var(--line); box-shadow: 0 0 0 1px rgba(167, 139, 250, 0.08) inset, var(--glow-purple), 0 30px 60px -30px rgba(0, 0, 0, 0.9); animation: stageIn 0.9s cubic-bezier(0.16, 1, 0.3, 1) both; }
