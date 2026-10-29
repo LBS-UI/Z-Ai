@@ -2,5 +2,7 @@ name = "zimelia"
 compatibility_date = "2026-10-29"
 pages_build_output_dir = "."
 
-# Optional: for wrangler pages deploy
-# Run: npx wrangler pages deploy . --project-name=zimelia
+# This is a static Pages site.
+# Deploy with:
+#   npx wrangler pages deploy . --project-name=zimelia
+# Do NOT use plain "wrangler deploy".

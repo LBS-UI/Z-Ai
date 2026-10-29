@@ -1,22 +1,20 @@
-# Zimelia — Cloudflare Pages Deploy
+# Zimelia — Cloudflare Pages
 
-This is a static site. Deploy it to Cloudflare Pages in under a minute.
+## Why it failed
+Cloudflare tried `wrangler deploy` (Workers).  
+This is a static site, so it needs **Pages**.
 
-## Option 1: Drag & Drop (easiest)
-1. Unzip this folder.
-2. Go to https://dash.cloudflare.com → Workers & Pages → Create application → Pages → Upload assets.
-3. Drag the entire `Z-Ai-main` folder (or its contents so `index.html` is at the root).
-4. Deploy. Done.
-
-## Option 2: Wrangler CLI
+## Correct deploy command
 ```bash
-cd Z-Ai-main
 npx wrangler pages deploy . --project-name=zimelia
 ```
 
-## After deploy
-- Open the `*.pages.dev` URL.
-- Click Settings → Fish Audio Voice → paste your API key → Save.
-- Chat and she’ll use the sprites + Verity-like voice.
+## Or (easiest)
+1. Cloudflare Dashboard → Workers & Pages → Create → Pages → **Upload assets**
+2. Drag this folder (or its contents so `index.html` is at the root)
+3. Deploy
 
-Sprites are in `assets/sprites/`. Talking shows `north-smile.png`.
+## After it’s live
+Open the site → Settings → Fish Audio Voice → paste your API key → Save.
+
+Sprites + talking north-smile work the same.
