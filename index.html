@@ -3265,13 +3265,41 @@ main { max-width: 1280px; margin: 0 auto; padding: 28px 22px 60px; }
   }
 
   var isTalking = false;
+  var hasTurned = false;
+  var TURN_SEQUENCE = [
+    "sprites/north.png",
+    "sprites/north-east.png",
+    "sprites/east.png",
+    "sprites/south-east.png",
+    "sprites/south.png"
+  ];
+  function playTurnSequence(callback) {
+    var i = 0;
+    function next() {
+      if (i >= TURN_SEQUENCE.length) {
+        if (callback) callback();
+        return;
+      }
+      loadCharacterImage(ASSETS_PATH + TURN_SEQUENCE[i], { label: "Turning" });
+      i++;
+      setTimeout(next, 280);
+    }
+    next();
+  }
   function setTalkingSprite(active) {
     isTalking = active;
     if (active) {
-      loadCharacterImage(ASSETS_PATH + TALKING_FILE, { label: "Talking", status: "Talking" });
+      // Prefer south-smile once she has turned to face you
+      var talkFile = hasTurned ? "sprites/south-smile.png" : TALKING_FILE;
+      loadCharacterImage(ASSETS_PATH + talkFile, { label: "Talking", status: "Talking" });
     } else {
       var def = getMoodDef(Zimelia.getMood());
-      loadCharacterImage(ASSETS_PATH + def.file, def);
+      // After turning, prefer south-facing idle
+      if (hasTurned && (def.key === "idle" || def.key === "calm")) {
+        loadCharacterImage(ASSETS_PATH + "sprites/south.png", def);
+      } else {
+        loadCharacterImage(ASSETS_PATH + def.file, def);
+      }
     }
   }
 
@@ -3366,7 +3394,19 @@ main { max-width: 1280px; margin: 0 auto; padding: 28px 22px 60px; }
       var isSystem = d.source === "command" || d.source === "personal-slang";
       appendMessage("Zimelia", d.message, isSystem ? "msg--system" : "msg--zimelia");
       if (!isSystem && d.message.length > 1) {
-        speakMessage(d.message);
+        // Slow turn on first greeting
+        var lastUser = (chatInput && chatInput.value) || "";
+        var recent = document.querySelectorAll(".msg--user");
+        var lastText = recent.length ? recent[recent.length - 1].textContent.toLowerCase() : "";
+        var isGreeting = /\b(hi|hey|hello|yo|sup|hiya|howdy)\b/.test(lastText);
+        if (isGreeting && !hasTurned) {
+          hasTurned = true;
+          playTurnSequence(function () {
+            speakMessage(d.message);
+          });
+        } else {
+          speakMessage(d.message);
+        }
       }
     }
   });
