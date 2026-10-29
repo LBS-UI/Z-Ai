@@ -8,6 +8,8 @@ binding = "ASSETS"
 
 [vars]
 FISH_MODEL_ID = "0089dce5fefb4c6ba9b9f2f0debe1ddc"
+# Use free tier by default (change to "s2.1-pro" if you have paid credits)
+FISH_MODEL_HEADER = "s2.1-pro-free"
 
-# Secret (set in Cloudflare dashboard or CLI, not here):
+# Secret:
 # wrangler secret put FISH_API_KEY

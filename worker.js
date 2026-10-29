@@ -31,12 +31,14 @@ export default {
 
       const modelId = env.FISH_MODEL_ID || "0089dce5fefb4c6ba9b9f2f0debe1ddc";
 
+      const modelHeader = env.FISH_MODEL_HEADER || "s2.1-pro-free";
+
       const fishRes = await fetch("https://api.fish.audio/v1/tts", {
         method: "POST",
         headers: {
           "Authorization": "Bearer " + apiKey,
           "Content-Type": "application/json",
-          "model": "s2.1-pro"
+          "model": modelHeader
         },
         body: JSON.stringify({
           text: text,
@@ -47,7 +49,11 @@ export default {
 
       if (!fishRes.ok) {
         const errText = await fishRes.text();
-        return new Response(JSON.stringify({ error: "Fish Audio error", detail: errText }), {
+        return new Response(JSON.stringify({ 
+          error: "Fish Audio error", 
+          status: fishRes.status,
+          detail: errText 
+        }), {
           status: fishRes.status,
           headers: { "Content-Type": "application/json" }
         });

@@ -3250,7 +3250,11 @@ main { max-width: 1280px; margin: 0 auto; padding: 28px 22px 60px; }
       body: JSON.stringify({ text: text })
     })
     .then(function (res) {
-      if (!res.ok) throw new Error("TTS failed: " + res.status);
+      if (!res.ok) {
+        return res.text().then(function (t) {
+          throw new Error("TTS failed: " + res.status + " " + t);
+        });
+      }
       return res.blob();
     })
     .then(function (blob) {
