@@ -6,8 +6,8 @@ main = "worker.js"
 directory = "."
 binding = "ASSETS"
 
-# Secrets (set these in Cloudflare dashboard or CLI):
+[vars]
+FISH_MODEL_ID = "0089dce5fefb4c6ba9b9f2f0debe1ddc"
+
+# Secret (set in Cloudflare dashboard or CLI, not here):
 # wrangler secret put FISH_API_KEY
-# Optional variable:
-# [vars]
-# FISH_MODEL_ID = "0089dce5fefb4c6ba9b9f2f0debe1ddc"
