@@ -78,7 +78,7 @@ main { max-width: 1280px; margin: 0 auto; padding: 28px 22px 60px; }
 .stage { position: relative; display: flex; flex-direction: column; align-items: center; gap: 14px; }
 .stage__frame { position: relative; width: 100%; max-width: 480px; aspect-ratio: 1 / 1; border-radius: var(--radius-lg); overflow: hidden; background: linear-gradient(160deg, rgba(124, 58, 237, 0.22), rgba(16, 10, 31, 0.9)); border: 1px solid var(--line); box-shadow: 0 0 0 1px rgba(167, 139, 250, 0.08) inset, var(--glow-purple), 0 30px 60px -30px rgba(0, 0, 0, 0.9); animation: stageIn 0.9s cubic-bezier(0.16, 1, 0.3, 1) both; }
 @keyframes stageIn { from { opacity: 0; transform: translateY(18px) scale(0.97); } to { opacity: 1; transform: translateY(0) scale(1); } }
-.stage__img { width: 100%; height: 100%; object-fit: cover; object-position: center top; transition: opacity 0.4s ease, transform 0.6s ease; }
+.stage__img { width: 100%; height: 100%; object-fit: contain; object-position: center; image-rendering: pixelated; image-rendering: crisp-edges; transition: opacity 0.4s ease, transform 0.6s ease; background: transparent; }
 .stage__img.is-switching { opacity: 0; transform: scale(1.03); }
 .stage__placeholder { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; background: repeating-linear-gradient(45deg, rgba(124, 58, 237, 0.08) 0 14px, transparent 14px 28px), linear-gradient(160deg, #1A1030, #0B0714); color: var(--text-dim); text-align: center; padding: 24px; }
 .stage__placeholder-mark { font-size: 4rem; font-weight: 800; color: var(--purple-3); opacity: 0.5; line-height: 1; }
@@ -248,12 +248,12 @@ main { max-width: 1280px; margin: 0 auto; padding: 28px 22px 60px; }
     <div class="hero__stage-col">
       <div class="stage">
         <div class="stage__frame">
-          <img id="zimeliaImage" class="stage__img" src="assets/zimelia-idle.jpg"
-               alt="Zimelia, a chibi AI assistant with dark hair, a green hair pin, amber eyes and a purple jacket, standing idle." />
+          <img id="zimeliaImage" class="stage__img" src="assets/sprites/north.png"
+               alt="Zimelia, a chibi AI assistant." />
           <div class="stage__placeholder" id="stagePlaceholder" hidden>
             <span class="stage__placeholder-mark" aria-hidden="true">Z</span>
             <span class="stage__placeholder-text">image placeholder</span>
-            <span class="stage__placeholder-file" id="placeholderFile">assets/zimelia-idle.jpg</span>
+            <span class="stage__placeholder-file" id="placeholderFile">assets/sprites/north.png</span>
           </div>
           <div class="stage__scan" aria-hidden="true"></div>
           <div class="stage__corners" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
@@ -454,7 +454,13 @@ main { max-width: 1280px; margin: 0 auto; padding: 28px 22px 60px; }
   </div>
 
   <div class="setting-group">
-    <h3 class="setting-group__title">What I've learned</h3>
+    <h3 class="setting-group__title">Fish Audio Voice</h3>
+    <input type="password" id="fishApiKeyInput" placeholder="Enter Fish Audio API key" style="width:100%;padding:10px;margin-bottom:8px;border-radius:8px;border:1px solid var(--line);background:var(--bg-1);color:var(--text);">
+    <button class="btn btn--ghost" type="button" id="saveFishKeyBtn" style="width:100%;padding:10px;font-size:0.82rem;">Save API Key</button>
+    <p class="settings__note" style="margin-top:8px;">Uses model ID 0089dce5fefb4c6ba9b9f2f0debe1ddc (Verity-like). Key stored locally.</p>
+  </div>
+
+  <div class="setting-group">
     <button class="btn btn--ghost" type="button" id="showProfileBtn"
             style="width:100%;padding:10px;font-size:0.82rem;">Show user profile</button>
   </div>
@@ -539,21 +545,22 @@ main { max-width: 1280px; margin: 0 auto; padding: 28px 22px 60px; }
 
   /* -------- 4. MOODS -------- */
   var MOODS = [
-    { key: "idle",        label: "Idle",        emoji: "🌙", file: "zimelia-idle.jpg",        status: "Calm" },
-    { key: "happy",       label: "Happy",       emoji: "😊", file: "zimelia-happy.jpg",       status: "Happy" },
-    { key: "thinking",    label: "Thinking",    emoji: "🤔", file: "zimelia-thinking.jpg",    status: "Thinking" },
-    { key: "confused",    label: "Confused",    emoji: "😕", file: "zimelia-confused.jpg",    status: "Confused" },
-    { key: "sad",         label: "Sad",         emoji: "😢", file: "zimelia-sad.jpg",         status: "Sad" },
-    { key: "scared",      label: "Scared",      emoji: "😨", file: "zimelia-scared.jpg",      status: "Scared" },
-    { key: "embarrassed", label: "Embarrassed", emoji: "😳", file: "zimelia-embarrassed.jpg", status: "Embarrassed" },
-    { key: "excited",     label: "Excited",     emoji: "🤩", file: "zimelia-happy.jpg",       status: "Excited" },
-    { key: "concerned",   label: "Concerned",   emoji: "🫂", file: "zimelia-sad.jpg",         status: "Concerned" },
-    { key: "calm",        label: "Calm",        emoji: "🫧", file: "zimelia-idle.jpg",        status: "Calm" }
+    { key: "idle",        label: "Idle",        emoji: "🌙", file: "sprites/north.png",        status: "Calm" },
+    { key: "happy",       label: "Happy",       emoji: "😊", file: "sprites/south-smile.png",  status: "Happy" },
+    { key: "thinking",    label: "Thinking",    emoji: "🤔", file: "sprites/north-east.png",   status: "Thinking" },
+    { key: "confused",    label: "Confused",    emoji: "😕", file: "sprites/west.png",         status: "Confused" },
+    { key: "sad",         label: "Sad",         emoji: "😢", file: "sprites/south-west.png",   status: "Sad" },
+    { key: "scared",      label: "Scared",      emoji: "😨", file: "sprites/east.png",         status: "Scared" },
+    { key: "embarrassed", label: "Embarrassed", emoji: "😳", file: "sprites/north-west-smile.png", status: "Embarrassed" },
+    { key: "excited",     label: "Excited",     emoji: "🤩", file: "sprites/south-smile.png",  status: "Excited" },
+    { key: "concerned",   label: "Concerned",   emoji: "🫂", file: "sprites/south.png",        status: "Concerned" },
+    { key: "calm",        label: "Calm",        emoji: "🫧", file: "sprites/north.png",        status: "Calm" }
   ];
   var MOOD_INDEX = {};
   for (var _mi = 0; _mi < MOODS.length; _mi++) MOOD_INDEX[MOODS[_mi].key] = MOODS[_mi];
   var ASSETS_PATH = "assets/";
-  var IDLE_FILE = "zimelia-idle.jpg";
+  var IDLE_FILE = "sprites/north.png";
+  var TALKING_FILE = "sprites/north-smile.png";
   function isValidMood(k) { return !!MOOD_INDEX[k]; }
   function getMoodDef(k) { return MOOD_INDEX[k] || MOOD_INDEX.idle; }
 
@@ -2824,7 +2831,8 @@ main { max-width: 1280px; margin: 0 auto; padding: 28px 22px 60px; }
   var SETTINGS_DEFAULTS = {
     theme: "dark", animations: "on", glow: "on",
     humorLevel: PROFILE.defaults.humorLevel,
-    responseLength: PROFILE.defaults.responseLength
+    responseLength: PROFILE.defaults.responseLength,
+    fishApiKey: ""
   };
   var SettingsManager = (function () {
     var settings = (function () {
@@ -3134,6 +3142,8 @@ main { max-width: 1280px; margin: 0 auto; padding: 28px 22px 60px; }
   var chatHint         = document.getElementById("chatHint");
   var clearChatBtn     = document.getElementById("clearChatBtn");
   var showProfileBtn   = document.getElementById("showProfileBtn");
+  var fishApiKeyInput  = document.getElementById("fishApiKeyInput");
+  var saveFishKeyBtn   = document.getElementById("saveFishKeyBtn");
   var brainStat        = document.getElementById("brainStat");
   var versionBadge     = document.getElementById("versionBadge");
   var aboutVersion     = document.getElementById("aboutVersion");
@@ -3207,6 +3217,56 @@ main { max-width: 1280px; margin: 0 auto; padding: 28px 22px 60px; }
     if (stagePlaceholder) stagePlaceholder.hidden = true;
     if (zimeliaImage) zimeliaImage.style.visibility = "visible";
   }
+
+  var isTalking = false;
+  function setTalkingSprite(active) {
+    isTalking = active;
+    if (active) {
+      loadCharacterImage(ASSETS_PATH + TALKING_FILE, { label: "Talking", status: "Talking" });
+    } else {
+      var def = getMoodDef(Zimelia.getMood());
+      loadCharacterImage(ASSETS_PATH + def.file, def);
+    }
+  }
+
+  function speakMessage(text) {
+    var key = settings.get("fishApiKey");
+    if (!key || !text) return;
+    setTalkingSprite(true);
+    fetch("https://api.fish.audio/v1/tts", {
+      method: "POST",
+      headers: {
+        "Authorization": "Bearer " + key,
+        "Content-Type": "application/json",
+        "model": "s2.1-pro"
+      },
+      body: JSON.stringify({
+        text: text,
+        reference_id: "0089dce5fefb4c6ba9b9f2f0debe1ddc",
+        format: "mp3"
+      })
+    })
+    .then(function (res) {
+      if (!res.ok) throw new Error("TTS failed: " + res.status);
+      return res.blob();
+    })
+    .then(function (blob) {
+      var url = URL.createObjectURL(blob);
+      var audio = new Audio(url);
+      audio.onended = function () {
+        setTalkingSprite(false);
+        URL.revokeObjectURL(url);
+      };
+      audio.onerror = function () { setTalkingSprite(false); };
+      audio.play().catch(function () { setTalkingSprite(false); });
+    })
+    .catch(function (err) {
+      console.warn("Voice error:", err);
+      setTalkingSprite(false);
+      showToast("Voice failed — check API key or credits.");
+    });
+  }
+
   function appendMessage(who, text, cls) {
     var wrap = document.createElement("div");
     wrap.className = "msg " + (cls || "msg--zimelia");
@@ -3248,6 +3308,15 @@ main { max-width: 1280px; margin: 0 auto; padding: 28px 22px 60px; }
     if (d.message) {
       var isSystem = d.source === "command" || d.source === "personal-slang";
       appendMessage("Zimelia", d.message, isSystem ? "msg--system" : "msg--zimelia");
+      if (!isSystem && d.message.length > 1) {
+        setTalkingSprite(true);
+        speakMessage(d.message); // will keep talking until audio ends, or we fall back
+        // fallback timer if no voice
+        var approxMs = Math.min(8000, Math.max(1500, d.message.length * 60));
+        setTimeout(function () {
+          if (isTalking && !settings.get("fishApiKey")) setTalkingSprite(false);
+        }, approxMs);
+      }
     }
   });
   Zimelia.on("zimelia:error", function () {
@@ -3256,7 +3325,9 @@ main { max-width: 1280px; margin: 0 auto; padding: 28px 22px 60px; }
   });
   Zimelia.on("zimelia:moodChange", function (e) {
     var def = (e.detail && e.detail.def) || getMoodDef(e.detail.mood);
-    loadCharacterImage(ASSETS_PATH + def.file, def);
+    if (!isTalking) {
+      loadCharacterImage(ASSETS_PATH + def.file, def);
+    }
     if (statusMood) statusMood.textContent = def.status;
     var btns = moodGrid.querySelectorAll(".mood-btn");
     for (var i = 0; i < btns.length; i++) {
@@ -3387,6 +3458,16 @@ main { max-width: 1280px; margin: 0 auto; padding: 28px 22px 60px; }
       Zimelia.sendMessage("/profile");
       showToast(c ? ("Showing " + c + " learned item" + (c === 1 ? "" : "s")) : "Nothing learned yet.");
     });
+    if (saveFishKeyBtn && fishApiKeyInput) {
+      saveFishKeyBtn.addEventListener("click", function () {
+        var key = fishApiKeyInput.value.trim();
+        settings.set("fishApiKey", key);
+        fishApiKeyInput.value = key ? "••••••••" : "";
+        showToast(key ? "Voice API key saved." : "Voice API key cleared.");
+      });
+      // preload masked
+      if (settings.get("fishApiKey")) fishApiKeyInput.value = "••••••••";
+    }
     if (micBtn) micBtn.addEventListener("click", function () { showToast("Voice input is coming soon."); });
     if (plusBtn) plusBtn.addEventListener("click", function () { showToast("Attachments are coming soon."); });
     if (talkBtn) talkBtn.addEventListener("click", function () {
