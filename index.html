@@ -186,12 +186,12 @@ p { margin: 0; }
 .nav__btn-label { display: inline; }
 
 main { max-width: 1280px; margin: 0 auto; padding: 28px 22px 60px; }
-.hero { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr); gap: 28px; align-items: start; margin-bottom: 56px; }
-.hero__stage-col { order: 2; }
+.hero { display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(280px, 0.8fr); gap: 20px; align-items: end; margin-bottom: 56px; }
+.hero__stage-col { order: 2; align-items: flex-end; }
 .hero__side-col { order: 1; }
-.hero__stage-col, .hero__side-col { display: flex; flex-direction: column; gap: 20px; }
-.stage { position: relative; display: flex; flex-direction: column; align-items: center; gap: 14px; }
-.stage__frame { position: relative; width: 100%; max-width: 480px; aspect-ratio: 1 / 1; border-radius: var(--radius-lg); overflow: hidden; background: #1a1030; border: 1px solid var(--line); box-shadow: 0 0 0 1px rgba(167, 139, 250, 0.08) inset, var(--glow-purple), 0 30px 60px -30px rgba(0, 0, 0, 0.9); animation: stageIn 0.9s cubic-bezier(0.16, 1, 0.3, 1) both; }
+.hero__stage-col, .hero__side-col { display: flex; flex-direction: column; gap: 16px; }
+.stage { position: relative; display: flex; flex-direction: column; align-items: flex-end; gap: 10px; }
+.stage__frame { position: relative; width: 100%; max-width: 320px; aspect-ratio: 1 / 1; border-radius: var(--radius-lg); overflow: hidden; background: #1a1030; border: 1px solid var(--line); box-shadow: 0 0 0 1px rgba(167, 139, 250, 0.08) inset, var(--glow-purple), 0 30px 60px -30px rgba(0, 0, 0, 0.9); animation: stageIn 0.9s cubic-bezier(0.16, 1, 0.3, 1) both; }
 @keyframes stageIn { from { opacity: 0; transform: translateY(18px) scale(0.97); } to { opacity: 1; transform: translateY(0) scale(1); } }
 .sprite-holder { position: absolute; inset: 0; background-repeat: no-repeat; background-position: center; background-size: contain; image-rendering: pixelated; image-rendering: crisp-edges; transition: opacity 0.25s ease; }
 .stage__placeholder { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; background: repeating-linear-gradient(45deg, rgba(124, 58, 237, 0.08) 0 14px, transparent 14px 28px), linear-gradient(160deg, #1A1030, #0B0714); color: var(--text-dim); text-align: center; padding: 24px; }
