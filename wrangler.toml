@@ -1,7 +1,13 @@
 name = "zimelia"
 compatibility_date = "2026-10-29"
+main = "worker.js"
 
-# Static assets (works with both Pages and Workers deploy)
 [assets]
 directory = "."
-# binding = "ASSETS"  # only needed if you add a custom Worker later
+binding = "ASSETS"
+
+# Secrets (set these in Cloudflare dashboard or CLI):
+# wrangler secret put FISH_API_KEY
+# Optional variable:
+# [vars]
+# FISH_MODEL_ID = "0089dce5fefb4c6ba9b9f2f0debe1ddc"

@@ -457,7 +457,7 @@ main { max-width: 1280px; margin: 0 auto; padding: 28px 22px 60px; }
     <h3 class="setting-group__title">Fish Audio Voice</h3>
     <input type="password" id="fishApiKeyInput" placeholder="Enter Fish Audio API key" style="width:100%;padding:10px;margin-bottom:8px;border-radius:8px;border:1px solid var(--line);background:var(--bg-1);color:var(--text);">
     <button class="btn btn--ghost" type="button" id="saveFishKeyBtn" style="width:100%;padding:10px;font-size:0.82rem;">Save API Key</button>
-    <p class="settings__note" style="margin-top:8px;">Uses model ID 0089dce5fefb4c6ba9b9f2f0debe1ddc (Verity-like). Key stored locally.</p>
+    <p class="settings__note" style="margin-top:8px;">Voice is handled by the Cloudflare Worker using the FISH_API_KEY secret. No key needed here.</p>
   </div>
 
   <div class="setting-group">
@@ -3242,21 +3242,12 @@ main { max-width: 1280px; margin: 0 auto; padding: 28px 22px 60px; }
   }
 
   function speakMessage(text) {
-    var key = settings.get("fishApiKey");
-    if (!key || !text) return;
+    if (!text) return;
     setTalkingSprite(true);
-    fetch("https://api.fish.audio/v1/tts", {
+    fetch("/tts", {
       method: "POST",
-      headers: {
-        "Authorization": "Bearer " + key,
-        "Content-Type": "application/json",
-        "model": "s2.1-pro"
-      },
-      body: JSON.stringify({
-        text: text,
-        reference_id: "0089dce5fefb4c6ba9b9f2f0debe1ddc",
-        format: "mp3"
-      })
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ text: text })
     })
     .then(function (res) {
       if (!res.ok) throw new Error("TTS failed: " + res.status);
@@ -3275,7 +3266,7 @@ main { max-width: 1280px; margin: 0 auto; padding: 28px 22px 60px; }
     .catch(function (err) {
       console.warn("Voice error:", err);
       setTalkingSprite(false);
-      showToast("Voice failed — check API key or credits.");
+      showToast("Voice failed — check Cloudflare secret or Fish Audio credits.");
     });
   }
 
@@ -3326,7 +3317,7 @@ main { max-width: 1280px; margin: 0 auto; padding: 28px 22px 60px; }
         // fallback timer if no voice
         var approxMs = Math.min(8000, Math.max(1500, d.message.length * 60));
         setTimeout(function () {
-          if (isTalking && !settings.get("fishApiKey")) setTalkingSprite(false);
+          if (isTalking) setTalkingSprite(false);
         }, approxMs);
       }
     }

@@ -1,14 +1,29 @@
-# Zimelia — Cloudflare Deploy
+# Zimelia — Cloudflare Worker + Secret (secure voice)
 
-This version works with the command Cloudflare is running (`wrangler deploy`).
+The API key never goes to the browser. The Worker uses a Cloudflare Secret.
 
-## Deploy (CLI)
+## 1. Deploy
 ```bash
 npx wrangler deploy
 ```
 
-## Or Dashboard
-Workers & Pages → Create → Pages → Upload assets → drag this folder.
+Or upload via the Cloudflare dashboard as a Worker with assets.
 
-## After deploy
-Open the site → Settings → Fish Audio Voice → paste your API key.
+## 2. Set the secret (required for voice)
+In the Cloudflare dashboard:
+- Go to your Worker → Settings → Variables and Secrets
+- Add a **Secret** named exactly: `FISH_API_KEY`
+- Paste your Fish Audio API key
+- (Optional) Add a plain Variable named `FISH_MODEL_ID` if you want to change the model later.  
+  Default is already `0089dce5fefb4c6ba9b9f2f0debe1ddc`.
+
+Or via CLI:
+```bash
+npx wrangler secret put FISH_API_KEY
+```
+
+## 3. Done
+Open the site and chat.  
+Zimelia will speak using the secret. The north-smile sprite shows while she’s talking.
+
+Sprites are embedded, so they always work.
