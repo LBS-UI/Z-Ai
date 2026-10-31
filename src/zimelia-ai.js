@@ -9,6 +9,9 @@
 import { ConversationManager } from "./context-manager.js";
 import { PersonalitySystem } from "./zimelia-personality.js";
 import { EmotionEngine } from "./emotion-engine.js";
+import { INTERFACES } from "./interfaces.js";
+
+export const AI_INTERFACE_VERSION = INTERFACES.ai;
 
 export class ZimeliaAI {
   /**

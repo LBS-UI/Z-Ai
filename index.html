@@ -644,6 +644,17 @@ main { max-width: 1280px; margin: 0 auto; padding: 28px 22px 60px; }
     <input type="password" id="fishApiKeyInput" placeholder="Enter Fish Audio API key" style="width:100%;padding:10px;margin-bottom:8px;border-radius:8px;border:1px solid var(--line);background:var(--bg-1);color:var(--text);">
     <button class="btn btn--ghost" type="button" id="saveFishKeyBtn" style="width:100%;padding:10px;font-size:0.82rem;">Save API Key</button>
     <p class="settings__note" style="margin-top:8px;">Voice is handled by the Cloudflare Worker using the FISH_API_KEY secret. No key needed here.</p>
+    <div style="margin-top:14px;">
+      <label style="display:flex;align-items:center;gap:8px;font-size:0.85rem;">
+        <input type="checkbox" id="voiceEnabled" checked> Voice effect
+      </label>
+      <label style="display:block;margin-top:10px;font-size:0.78rem;color:var(--text-dim);">
+        Intensity <span id="intensityValue">45%</span>
+      </label>
+      <input type="range" id="voiceIntensity" min="0" max="100" value="45" style="width:100%;">
+      <button class="btn btn--ghost" type="button" id="testVoice" style="width:100%;margin-top:8px;padding:10px;font-size:0.82rem;">Test voice</button>
+      <p id="voiceStatus" class="settings__note" style="margin-top:8px;">Voice ready.</p>
+    </div>
   </div>
 
   <div class="setting-group">
@@ -3385,6 +3396,24 @@ main { max-width: 1280px; margin: 0 auto; padding: 28px 22px 60px; }
       return res.blob();
     })
     .then(function (blob) {
+      var fx = window.ZimeliaVoiceFX;
+      if (fx && typeof fx.play === "function") {
+        fx.play(blob).then(function () {
+          setTalkingSprite(true);
+          if (statusState) statusState.textContent = "talking";
+        }).catch(function () {
+          setTalkingSprite(false);
+          if (statusState) statusState.textContent = "idle";
+        });
+        var el = fx.audio;
+        if (el) {
+          el.onended = function () {
+            setTalkingSprite(false);
+            if (statusState) statusState.textContent = "idle";
+          };
+        }
+        return;
+      }
       var url = URL.createObjectURL(blob);
       var audio = new Audio(url);
       audio.onplay = function () {
@@ -3730,9 +3759,67 @@ main { max-width: 1280px; margin: 0 auto; padding: 28px 22px 60px; }
 
 <script type="module">
 import { createZimeliaAI } from "./src/zimelia-ai.js";
+import { ZimeliaVoiceFX } from "./src/zimelia-voice-fx.js";
+
 var brain = createZimeliaAI();
 window.ZimeliaBrain = brain;
-console.info("[Zimelia] Modules connected: conversation + personality + emotion");
+
+var audio = document.createElement("audio");
+audio.preload = "auto";
+audio.hidden = true;
+document.body.appendChild(audio);
+var voiceFX = new ZimeliaVoiceFX(audio);
+window.ZimeliaVoiceFX = voiceFX;
+
+var enabledInput = document.querySelector("#voiceEnabled");
+var intensityInput = document.querySelector("#voiceIntensity");
+var intensityValue = document.querySelector("#intensityValue");
+var testButton = document.querySelector("#testVoice");
+var status = document.querySelector("#voiceStatus");
+
+if (enabledInput) {
+  enabledInput.addEventListener("change", function () {
+    voiceFX.setEnabled(enabledInput.checked);
+  });
+}
+if (intensityInput) {
+  intensityInput.addEventListener("input", function () {
+    var value = Number(intensityInput.value);
+    if (intensityValue) intensityValue.textContent = value + "%";
+    voiceFX.setIntensity(value / 100);
+  });
+}
+if (audio) {
+  audio.addEventListener("ended", function () {
+    if (status) status.textContent = "Finished speaking.";
+  });
+  audio.addEventListener("error", function () {
+    if (status) status.textContent = "Audio playback failed.";
+  });
+}
+if (testButton) {
+  testButton.addEventListener("click", async function () {
+    try {
+      if (status) status.textContent = "Preparing voice...";
+      await voiceFX.initialize();
+      if (status) status.textContent = "Generating speech...";
+      var res = await fetch("/tts", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ text: "Hello! I'm Zimelia. Hajimemashite!" })
+      });
+      if (!res.ok) throw new Error("TTS " + res.status);
+      var blob = await res.blob();
+      if (status) status.textContent = "Zimelia is speaking...";
+      await voiceFX.play(blob);
+    } catch (err) {
+      console.error(err);
+      if (status) status.textContent = "Could not start voice playback.";
+    }
+  });
+}
+
+console.info("[Zimelia] Modules connected: conversation + personality + emotion + voice FX");
 </script>
 
 </body>
