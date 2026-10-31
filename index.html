@@ -189,8 +189,9 @@ main { max-width: 1280px; margin: 0 auto; padding: 28px 22px 60px; }
 .banner {
   width: 100%;
   max-width: 1280px;
-  margin: 0 auto 28px;
+  margin: 0 auto 24px;
   aspect-ratio: 1672 / 941;
+  max-height: 280px;
   border-radius: var(--radius-lg);
   overflow: hidden;
   background: #1a1030;
@@ -217,11 +218,18 @@ main { max-width: 1280px; margin: 0 auto; padding: 28px 22px 60px; }
   letter-spacing: 0.12em;
   text-transform: uppercase;
 }
-.hero__stage-col { order: 2; align-items: flex-end; }
+.hero {
+  display: grid;
+  grid-template-columns: minmax(0, 1.3fr) minmax(260px, 0.7fr);
+  gap: 24px;
+  align-items: end;
+  margin-bottom: 48px;
+}
+.hero__stage-col { order: 2; align-items: center; }
 .hero__side-col { order: 1; }
-.hero__stage-col, .hero__side-col { display: flex; flex-direction: column; gap: 16px; }
-.stage { position: relative; display: flex; flex-direction: column; align-items: flex-end; gap: 10px; }
-.stage__frame { position: relative; width: 100%; max-width: 320px; min-height: 280px; aspect-ratio: 1 / 1; border-radius: var(--radius-lg); overflow: hidden; background: #1a1030; border: 1px solid var(--line); box-shadow: 0 0 0 1px rgba(167, 139, 250, 0.08) inset, var(--glow-purple), 0 30px 60px -30px rgba(0, 0, 0, 0.9); animation: stageIn 0.9s cubic-bezier(0.16, 1, 0.3, 1) both; }
+.hero__stage-col, .hero__side-col { display: flex; flex-direction: column; gap: 16px; min-width: 0; }
+.stage { position: relative; display: flex; flex-direction: column; align-items: center; gap: 10px; width: 100%; }
+.stage__frame { position: relative; width: 100%; max-width: 300px; aspect-ratio: 1 / 1; border-radius: var(--radius-lg); overflow: hidden; background: #1a1030; border: 1px solid var(--line); box-shadow: 0 0 0 1px rgba(167, 139, 250, 0.08) inset, var(--glow-purple), 0 30px 60px -30px rgba(0, 0, 0, 0.9); animation: stageIn 0.9s cubic-bezier(0.16, 1, 0.3, 1) both; }
 @keyframes stageIn { from { opacity: 0; transform: translateY(18px) scale(0.97); } to { opacity: 1; transform: translateY(0) scale(1); } }
 .sprite-holder { position: absolute; inset: 0; background-repeat: no-repeat; background-position: center bottom; background-size: contain; image-rendering: pixelated; image-rendering: crisp-edges; transition: opacity 0.25s ease; z-index: 2; }
 .stage__placeholder { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; background: repeating-linear-gradient(45deg, rgba(124, 58, 237, 0.08) 0 14px, transparent 14px 28px), linear-gradient(160deg, #1A1030, #0B0714); color: var(--text-dim); text-align: center; padding: 24px; }
@@ -340,7 +348,13 @@ main { max-width: 1280px; margin: 0 auto; padding: 28px 22px 60px; }
 [data-glow="off"] .brand__mark { box-shadow: none; }
 [data-glow="off"] .mood-btn.is-active { box-shadow: none; }
 [data-animations="off"] *, [data-animations="off"] *::before, [data-animations="off"] *::after { animation: none !important; transition: none !important; }
-@media (max-width: 980px) { .hero { grid-template-columns: 1fr; } .stage__frame { max-width: 420px; } .about__card { grid-template-columns: 1fr; } .about__portrait { max-width: 220px; margin: 0 auto; } }
+@media (max-width: 980px) {
+  .hero { grid-template-columns: 1fr; }
+  .hero__stage-col, .hero__side-col { order: unset; }
+  .stage__frame { max-width: 280px; margin: 0 auto; }
+  .about__card { grid-template-columns: 1fr; }
+  .about__portrait { max-width: 220px; margin: 0 auto; }
+}
 @media (max-width: 640px) { main { padding: 20px 14px 48px; } .topbar__inner { padding: 12px 14px; } .nav__btn-label { display: none; } .nav__btn { padding: 9px 11px; font-size: 0.8rem; } .brand__sub { display: none; } .quick { grid-template-columns: repeat(2, 1fr); } .stage__frame { border-radius: var(--radius); } .hero__cta .btn { flex: 1 1 auto; } .hero__title { font-size: 1.6rem; } .about__card { padding: 18px; } .toasts { bottom: 14px; } }
 @media (max-width: 380px) { .quick__btn { padding: 12px 6px; font-size: 0.72rem; } .hero__title { font-size: 1.4rem; } }
 @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.001ms !important; animation-iteration-count: 1 !important; transition-duration: 0.001ms !important; } }
