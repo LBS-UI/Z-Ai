@@ -220,13 +220,12 @@ main { max-width: 1280px; margin: 0 auto; padding: 28px 22px 60px; }
 }
 .hero {
   display: grid;
-  grid-template-columns: minmax(0, 1.3fr) minmax(260px, 0.7fr);
+  grid-template-columns: 1fr;
   gap: 24px;
-  align-items: end;
-  margin-bottom: 48px;
+  margin-bottom: 32px;
 }
-.hero__stage-col { order: 2; align-items: center; }
-.hero__side-col { order: 1; }
+.hero__stage-col { order: 1; }
+.hero__side-col { order: 2; }
 .hero__stage-col, .hero__side-col { display: flex; flex-direction: column; gap: 16px; min-width: 0; }
 .stage { position: relative; display: flex; flex-direction: column; align-items: center; gap: 10px; width: 100%; }
 .stage__frame { position: relative; width: 100%; max-width: 300px; aspect-ratio: 1 / 1; border-radius: var(--radius-lg); overflow: hidden; background: #1a1030; border: 1px solid var(--line); box-shadow: 0 0 0 1px rgba(167, 139, 250, 0.08) inset, var(--glow-purple), 0 30px 60px -30px rgba(0, 0, 0, 0.9); animation: stageIn 0.9s cubic-bezier(0.16, 1, 0.3, 1) both; }
@@ -282,7 +281,26 @@ main { max-width: 1280px; margin: 0 auto; padding: 28px 22px 60px; }
 .msg--typing .dot:nth-child(2) { animation-delay: 0.15s; }
 .msg--typing .dot:nth-child(3) { animation-delay: 0.3s; }
 @keyframes typing { 0%, 60%, 100% { opacity: 0.3; transform: translateY(0); } 30% { opacity: 1; transform: translateY(-3px); } }
-.chat__form { display: flex; align-items: center; gap: 8px; padding: 8px; border-radius: 14px; background: rgba(11, 7, 20, 0.6); border: 1px solid var(--line); }
+.chat-row {
+  display: flex;
+  align-items: flex-end;
+  gap: 16px;
+}
+.chat-row .chat__form { flex: 1; min-width: 0; }
+.chat-row .stage {
+  flex: 0 0 140px;
+  align-items: center;
+}
+.chat-row .stage__frame {
+  max-width: 140px;
+  width: 140px;
+  height: 140px;
+  aspect-ratio: 1 / 1;
+}
+@media (max-width: 640px) {
+  .chat-row { flex-direction: column; align-items: center; }
+  .chat-row .stage { flex: none; }
+}
 [data-theme="light"] .chat__form { background: rgba(255, 255, 255, 0.85); }
 .chat__input { flex: 1; min-width: 0; padding: 10px 8px; border: none; background: transparent; color: var(--text); font-size: 0.92rem; outline: none; }
 .chat__input::placeholder { color: var(--text-dim); }
@@ -438,18 +456,6 @@ main { max-width: 1280px; margin: 0 auto; padding: 28px 22px 60px; }
 
   <section class="hero" id="home" aria-labelledby="heroTitle">
     <div class="hero__stage-col">
-      <div class="stage">
-        <div class="stage__frame" id="spriteStage">
-          <div id="zimeliaSprite" class="sprite-holder" style="background-image:url(assets/sprites/south.jpg)"></div>
-          <div class="stage__scan" aria-hidden="true"></div>
-          <div class="stage__corners" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
-        </div>
-        <span class="stage__badge">
-          <span class="status-pill__dot" aria-hidden="true"></span>
-          ZIMELIA · v<span id="versionBadge">0.7.0</span>
-        </span>
-      </div>
-
       <div class="hero__intro">
         <p class="eyebrow">WELCOME TO ZIMELIA'S SPACE</p>
         <h1 class="hero__title" id="heroTitle">Hello! I'm <span class="text-grad">Zimelia</span>.</h1>
@@ -490,14 +496,21 @@ main { max-width: 1280px; margin: 0 auto; padding: 28px 22px 60px; }
             <p>Hey — what's on your mind?</p>
           </div>
         </div>
-        <form class="chat__form" id="chatForm" autocomplete="off">
-          <button class="icon-btn" type="button" id="plusBtn" aria-label="Attach something (coming soon)">+</button>
-          <input class="chat__input" id="chatInput" type="text"
-                 placeholder="Talk to Zimelia... (or /help)" aria-label="Message Zimelia" />
-          <button class="icon-btn" type="button" id="micBtn" disabled
-                  title="Coming soon" aria-label="Voice input — coming soon">🎙</button>
-          <button class="icon-btn icon-btn--send" type="submit" id="sendBtn" aria-label="Send message">➤</button>
-        </form>
+        <div class="chat-row">
+          <form class="chat__form" id="chatForm" autocomplete="off">
+            <button class="icon-btn" type="button" id="plusBtn" aria-label="Attach something (coming soon)">+</button>
+            <input class="chat__input" id="chatInput" type="text"
+                   placeholder="Talk to Zimelia... (or /help)" aria-label="Message Zimelia" />
+            <button class="icon-btn" type="button" id="micBtn" disabled
+                    title="Coming soon" aria-label="Voice input — coming soon">🎙</button>
+            <button class="icon-btn icon-btn--send" type="submit" id="sendBtn" aria-label="Send message">➤</button>
+          </form>
+          <div class="stage">
+            <div class="stage__frame" id="spriteStage">
+              <div id="zimeliaSprite" class="sprite-holder" style="background-image:url(assets/sprites/south.jpg)"></div>
+            </div>
+          </div>
+        </div>
         <p class="hint" id="chatHint">Zimelia learns quietly. Try /profile or /help.</p>
       </section>
 
