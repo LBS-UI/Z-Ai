@@ -461,7 +461,7 @@ main { max-width: 1280px; margin: 0 auto; padding: 28px 22px 60px; }
         <h1 class="hero__title" id="heroTitle">Hello! I'm <span class="text-grad">Zimelia</span>.</h1>
         <p class="hero__lead">How can I help you today?</p>
         <div class="hero__cta">
-          <button class="btn btn--primary" type="button" id="talkBtn">Talk to Zimelia</button>
+          <a class="btn btn--primary" href="chat.html">Talk to Zimelia</a>
           <button class="btn btn--ghost" type="button" data-scroll="#about">About Zimelia</button>
         </div>
       </div>
@@ -488,30 +488,10 @@ main { max-width: 1280px; margin: 0 auto; padding: 28px 22px 60px; }
       <section class="panel" aria-labelledby="chatTitle">
         <header class="panel__head">
           <h2 id="chatTitle">Chat</h2>
-          <span class="tag" id="chatTag">LOCAL</span>
+          <span class="tag">WINDOW</span>
         </header>
-        <div class="chat__log" id="chatLog" role="log" aria-live="polite" aria-label="Chat messages">
-          <div class="msg msg--zimelia">
-            <span class="msg__who">Zimelia</span>
-            <p>Hey — what's on your mind?</p>
-          </div>
-        </div>
-        <div class="chat-row">
-          <form class="chat__form" id="chatForm" autocomplete="off">
-            <button class="icon-btn" type="button" id="plusBtn" aria-label="Attach something (coming soon)">+</button>
-            <input class="chat__input" id="chatInput" type="text"
-                   placeholder="Talk to Zimelia... (or /help)" aria-label="Message Zimelia" />
-            <button class="icon-btn" type="button" id="micBtn" disabled
-                    title="Coming soon" aria-label="Voice input — coming soon">🎙</button>
-            <button class="icon-btn icon-btn--send" type="submit" id="sendBtn" aria-label="Send message">➤</button>
-          </form>
-          <div class="stage">
-            <div class="stage__frame" id="spriteStage">
-              <div id="zimeliaSprite" class="sprite-holder" style="background-image:url(assets/sprites/south.jpg)"></div>
-            </div>
-          </div>
-        </div>
-        <p class="hint" id="chatHint">Zimelia learns quietly. Try /profile or /help.</p>
+        <p style="margin:0 0 14px;color:var(--text-dim);font-size:0.92rem;">Chat lives in its own window so the homepage stays clean.</p>
+        <a class="btn btn--primary" href="chat.html" style="display:inline-block;text-decoration:none;">Open chat</a>
       </section>
 
       <div class="quick" role="group" aria-label="Quick actions">

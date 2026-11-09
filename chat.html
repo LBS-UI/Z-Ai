@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Zimelia · Chat</title>
+<style>
+:root {
+  --bg: #100e1b;
+  --panel: #1b1729;
+  --purple: #a88af5;
+  --text: #f8f4ff;
+  --muted: #a69dbd;
+  --border: #39304d;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  min-height: 100vh;
+  padding: 20px;
+  display: grid;
+  place-items: center;
+  font-family: Arial, sans-serif;
+  color: var(--text);
+  background:
+    radial-gradient(ellipse at 80% 20%, #40316b 0%, transparent 40%),
+    radial-gradient(ellipse at 10% 90%, #17433d 0%, transparent 35%),
+    var(--bg);
+}
+button, input { font: inherit; }
+.app {
+  width: min(1100px, 100%);
+  height: min(760px, calc(100vh - 40px));
+  min-height: 560px;
+  display: grid;
+  grid-template-columns: 1fr 0.9fr;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  border-radius: 24px;
+  background: #151220ef;
+  box-shadow: 0 25px 80px #0006;
+}
+.chat-panel { min-width: 0; display: flex; flex-direction: column; padding: 24px; }
+.header { display: flex; justify-content: space-between; align-items: center; padding-bottom: 20px; border-bottom: 1px solid var(--border); }
+.brand { display: flex; align-items: center; gap: 12px; }
+.logo { width: 42px; height: 42px; display: grid; place-items: center; border-radius: 14px; background: linear-gradient(135deg, #c5adff, #7654cb); font-size: 23px; text-decoration: none; color: #fff; }
+.brand h2 { margin: 0; font-size: 18px; }
+.brand p { margin: 5px 0 0; font-size: 12px; color: var(--muted); }
+.status { font-size: 11px; color: #82e6bc; }
+.status::before { content: ""; display: inline-block; width: 7px; height: 7px; margin-right: 6px; border-radius: 50%; background: #82e6bc; }
+.messages { flex: 1; min-height: 0; overflow-y: auto; padding: 22px 3px; display: flex; flex-direction: column; gap: 16px; scroll-behavior: smooth; }
+.message { display: flex; align-items: flex-end; gap: 9px; animation: appear 0.2s ease; }
+.message.user { justify-content: flex-end; }
+.avatar-mini { flex-shrink: 0; width: 30px; height: 30px; display: grid; place-items: center; border-radius: 10px; background: #35294e; }
+.message-content { max-width: 82%; }
+.bubble { padding: 13px 15px; border-radius: 16px 16px 16px 4px; background: #292339; font-size: 14px; line-height: 1.6; overflow-wrap: anywhere; white-space: pre-wrap; }
+.user .bubble { background: #7957ca; border-radius: 16px 16px 4px 16px; }
+.time { margin-top: 5px; color: var(--muted); font-size: 10px; }
+.user .time { text-align: right; }
+.composer-area { padding-top: 16px; border-top: 1px solid var(--border); }
+.quick-prompts { display: flex; flex-wrap: wrap; gap: 7px; margin-bottom: 12px; }
+.quick-prompts button { border: 1px solid var(--border); border-radius: 20px; padding: 7px 10px; color: #ded2ff; background: #a88af510; font-size: 11px; cursor: pointer; }
+.quick-prompts button:hover { background: #a88af52a; }
+.composer { display: flex; gap: 9px; align-items: center; padding: 7px 7px 7px 14px; border: 1px solid var(--border); border-radius: 16px; background: #ffffff08; }
+.composer input { width: 100%; min-width: 0; padding: 10px 0; border: 0; outline: 0; color: var(--text); background: transparent; }
+.composer input::placeholder { color: #837a9c; }
+.send { width: 42px; height: 42px; flex-shrink: 0; border: 0; border-radius: 12px; background: var(--purple); color: #21152f; font-size: 20px; cursor: pointer; }
+.send:hover { filter: brightness(1.15); }
+.hint { margin-top: 10px; text-align: center; color: #817792; font-size: 10px; }
+.character-panel { position: relative; min-width: 0; overflow: hidden; display: flex; flex-direction: column; align-items: center; justify-content: space-between; padding: 25px 20px; border-left: 1px solid var(--border); background: linear-gradient(160deg, #49366b55, #151b2555); }
+.character-top { z-index: 1; width: 100%; display: flex; justify-content: space-between; align-items: center; }
+.eyebrow { font-size: 10px; letter-spacing: 2px; color: var(--muted); text-transform: uppercase; }
+.mood { border: 1px solid #82e6bc44; border-radius: 20px; padding: 8px 11px; color: #a6f5d5; background: #82e6bc10; font-size: 11px; }
+.sprite-stage { position: relative; flex: 1; width: 100%; min-height: 300px; display: grid; place-items: center; }
+.glow { position: absolute; width: 85%; max-width: 330px; aspect-ratio: 1; border-radius: 50%; background: radial-gradient(circle, #a88af52b, transparent 70%); }
+.sprite { position: relative; z-index: 1; width: min(280px, 100%); height: 320px; background-repeat: no-repeat; background-position: center bottom; background-size: contain; image-rendering: pixelated; animation: float 4s ease-in-out infinite; filter: drop-shadow(0 20px 25px #0005); }
+.character-bottom { z-index: 1; text-align: center; padding-bottom: 10px; }
+.character-bottom h1 { margin: 0; font-size: 27px; }
+.character-bottom h1 span { color: var(--purple); }
+.character-bottom p { color: var(--muted); font-size: 12px; }
+.tags { display: flex; justify-content: center; gap: 7px; flex-wrap: wrap; }
+.tags span { padding: 6px 10px; border: 1px solid var(--border); border-radius: 20px; color: #d0c3e9; font-size: 10px; }
+.typing { display: flex; gap: 4px; padding: 5px 0; }
+.typing span { width: 6px; height: 6px; border-radius: 50%; background: var(--purple); animation: bounce .5s infinite alternate; }
+.typing span:nth-child(2) { animation-delay: .15s; }
+.typing span:nth-child(3) { animation-delay: .3s; }
+@keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+@keyframes bounce { to { transform: translateY(-4px); opacity: .4; } }
+@keyframes appear { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+@media (max-width: 700px) {
+  body { padding: 8px; display: block; }
+  .app { height: auto; min-height: calc(100vh - 16px); grid-template-columns: 1fr; }
+  .character-panel { grid-row: 1; min-height: 320px; border-left: 0; border-bottom: 1px solid var(--border); }
+  .sprite { width: 180px; height: 200px; }
+  .chat-panel { min-height: 480px; padding: 17px; }
+}
+</style>
+</head>
+<body>
+<main class="app">
+  <section class="chat-panel">
+    <header class="header">
+      <div class="brand">
+        <a class="logo" href="index.html" title="Back home">Z</a>
+        <div>
+          <h2>Zimelia</h2>
+          <p>Your virtual companion</p>
+        </div>
+      </div>
+      <div class="status" id="status">Online</div>
+    </header>
+    <div class="messages" id="messages" aria-live="polite">
+      <div class="message">
+        <div class="avatar-mini">Z</div>
+        <div class="message-content">
+          <div class="bubble">Hey. What's on your mind?</div>
+          <div class="time">Zimelia · just now</div>
+        </div>
+      </div>
+    </div>
+    <div class="composer-area">
+      <div class="quick-prompts">
+        <button type="button" data-prompt="Hi">Hi</button>
+        <button type="button" data-prompt="I'm having a rough day.">Rough day</button>
+        <button type="button" data-prompt="What can you do?">Help</button>
+      </div>
+      <form class="composer" id="chatForm">
+        <input id="chatInput" type="text" placeholder="Talk to Zimelia..." maxlength="1000" autocomplete="off" aria-label="Your message" />
+        <button class="send" type="submit" aria-label="Send">➤</button>
+      </form>
+      <div class="hint">Separate chat window · modules connected</div>
+    </div>
+  </section>
+  <aside class="character-panel">
+    <div class="character-top">
+      <span class="eyebrow">Character space</span>
+      <span class="mood" id="mood">Calm</span>
+    </div>
+    <div class="sprite-stage">
+      <div class="glow"></div>
+      <div id="zimeliaSprite" class="sprite" style="background-image:url(assets/sprites/south.jpg)"></div>
+    </div>
+    <div class="character-bottom">
+      <h1>Zimelia <span>✦</span></h1>
+      <p id="characterLine">Facing you.</p>
+      <div class="tags"><span>Kind</span><span>Thoughtful</span><span>Honest</span></div>
+    </div>
+  </aside>
+</main>
+<script type="module">
+import { createZimeliaAI } from "./src/zimelia-ai.js";
+import { ZimeliaVoiceFX } from "./src/zimelia-voice-fx.js";
+
+const brain = createZimeliaAI();
+const audio = document.createElement("audio");
+audio.hidden = true;
+document.body.appendChild(audio);
+const voiceFX = new ZimeliaVoiceFX(audio);
+
+const form = document.getElementById("chatForm");
+const input = document.getElementById("chatInput");
+const messages = document.getElementById("messages");
+const mood = document.getElementById("mood");
+const characterLine = document.getElementById("characterLine");
+const sprite = document.getElementById("zimeliaSprite");
+const status = document.getElementById("status");
+
+let isTalking = false;
+const CLOSED = "assets/sprites/south closed.jpg";
+const IDLE = "assets/sprites/south.jpg";
+const SMILE = "assets/sprites/south-smile.jpg";
+
+function setSprite(path) {
+  if (sprite) sprite.style.backgroundImage = "url(" + path + ")";
+}
+function currentTime() {
+  return new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+}
+function addMessage(text, sender) {
+  const row = document.createElement("div");
+  row.className = "message" + (sender === "user" ? " user" : "");
+  if (sender !== "user") {
+    const av = document.createElement("div");
+    av.className = "avatar-mini";
+    av.textContent = "Z";
+    row.appendChild(av);
+  }
+  const content = document.createElement("div");
+  content.className = "message-content";
+  const bubble = document.createElement("div");
+  bubble.className = "bubble";
+  bubble.textContent = text;
+  const time = document.createElement("div");
+  time.className = "time";
+  time.textContent = (sender === "user" ? "You" : "Zimelia") + " · " + currentTime();
+  content.append(bubble, time);
+  row.appendChild(content);
+  messages.appendChild(row);
+  messages.scrollTop = messages.scrollHeight;
+  return row;
+}
+function setMood(name, caption) {
+  if (mood) mood.textContent = name;
+  if (characterLine) characterLine.textContent = caption;
+}
+async function speak(text) {
+  try {
+    const res = await fetch("/tts", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ text })
+    });
+    if (!res.ok) return;
+    const blob = await res.blob();
+    isTalking = true;
+    setSprite(SMILE);
+    await voiceFX.play(blob);
+    audio.onended = function () {
+      isTalking = false;
+      setSprite(IDLE);
+    };
+  } catch (e) {
+    isTalking = false;
+    setSprite(IDLE);
+  }
+}
+async function sendMessage(value) {
+  const message = String(value || "").trim();
+  if (!message) return;
+  addMessage(message, "user");
+  input.value = "";
+  input.focus();
+  if (status) status.textContent = "Thinking";
+  const result = await brain.handleMessage(message);
+  if (result && result.message) {
+    addMessage(result.message, "bot");
+    const emo = result.emotion && result.emotion.primary && result.emotion.primary.label;
+    if (emo === "sadness") setMood("Caring", "I'm here.");
+    else if (emo === "happiness" || emo === "excitement") setMood("Cheerful", "That's nice.");
+    else if (result.intent === "question") setMood("Thoughtful", "Thinking with you.");
+    else setMood("Calm", "Listening.");
+    speak(result.message);
+  }
+  if (status) status.textContent = "Online";
+}
+form.addEventListener("submit", function (e) {
+  e.preventDefault();
+  sendMessage(input.value);
+});
+document.querySelectorAll("[data-prompt]").forEach(function (btn) {
+  btn.addEventListener("click", function () { sendMessage(btn.getAttribute("data-prompt")); });
+});
+
+// blink twice every minute
+setInterval(function () {
+  if (isTalking) return;
+  setSprite(CLOSED);
+  setTimeout(function () { if (!isTalking) setSprite(IDLE); }, 140);
+  setTimeout(function () {
+    if (isTalking) return;
+    setSprite(CLOSED);
+    setTimeout(function () { if (!isTalking) setSprite(IDLE); }, 140);
+  }, 320);
+}, 60000);
+</script>
+</body>
+</html>
