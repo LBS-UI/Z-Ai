@@ -324,6 +324,7 @@ main { max-width: 1280px; margin: 0 auto; padding: 28px 22px 60px; }
 .mood-btn.is-active { border-color: var(--purple-3); background: linear-gradient(150deg, rgba(124, 58, 237, 0.28), rgba(74, 222, 128, 0.08)); box-shadow: 0 0 0 1px var(--purple-3) inset, var(--glow-purple); }
 .about__card { display: grid; grid-template-columns: 220px minmax(0, 1fr); gap: 26px; padding: 26px; border-radius: var(--radius-lg); background: var(--glass); border: 1px solid var(--line); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); }
 .about__portrait { position: relative; aspect-ratio: 1 / 1; border-radius: var(--radius); display: grid; place-items: center; background: radial-gradient(circle at 50% 30%, rgba(139, 92, 246, 0.4), transparent 70%), linear-gradient(160deg, #1A1030, #0B0714); border: 1px solid var(--line); overflow: hidden; }
+.about__portrait img { width: 100%; height: 100%; object-fit: contain; image-rendering: pixelated; image-rendering: crisp-edges; }
 .about__monogram { font-size: 4.5rem; font-weight: 800; background: linear-gradient(120deg, var(--purple-3), var(--green)); -webkit-background-clip: text; background-clip: text; color: transparent; }
 .about__portrait-label { position: absolute; bottom: 12px; font-size: 0.62rem; letter-spacing: 0.3em; color: var(--text-dim); font-weight: 700; }
 .about__name { font-size: 1.4rem; letter-spacing: 0.14em; font-weight: 800; }
@@ -517,8 +518,8 @@ main { max-width: 1280px; margin: 0 auto; padding: 28px 22px 60px; }
       <p class="section__sub">A little about the companion behind the interface.</p>
     </div>
     <div class="about__card">
-      <div class="about__portrait" aria-hidden="true">
-        <span class="about__monogram">Z</span>
+      <div class="about__portrait">
+        <img src="assets/image/idle-rotations.gif" alt="Zimelia idle rotations" />
         <span class="about__portrait-label">ZIMELIA</span>
       </div>
       <div class="about__body">

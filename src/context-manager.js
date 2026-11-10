@@ -116,26 +116,29 @@ export class ConversationManager {
     const t = String(text || "").toLowerCase().trim();
     if (!t) return "unclear";
 
-    if (/^(hi|hey|hello|yo|sup|hiya|howdy|good morning|good night)\b/.test(t) && t.length < 40) {
+    if (/^(hi|hey|hello|yo|sup|hiya|howdy|good morning|good night|whats up|what's up)\b/.test(t) && t.length < 50) {
       return "greeting";
     }
     if (this._isFollowUp(t)) return "follow_up";
-    if (/\b(i feel|i'm (sad|angry|frustrated|overwhelmed|stressed|anxious|upset)|this sucks|i hate)\b/.test(t)) {
+    if (/\b(i feel|i'm (sad|angry|frustrated|overwhelmed|stressed|anxious|upset)|this sucks|i hate|i'm tired|feeling down)\b/.test(t)) {
       return "venting";
     }
-    if (/\b(should i|what should i|any advice|what do you think|help me decide)\b/.test(t)) {
+    if (/\b(should i|what should i|any advice|what do you think|help me decide|what would you do)\b/.test(t)) {
       return "advice_seeking";
     }
     if (/\b(tell me a story|once upon|story about|imagine if)\b/.test(t)) {
       return "storytelling";
     }
-    if (/\b(can you|could you|please|i want you to|make|create|write|show me)\b/.test(t)) {
+    if (/\b(can you|could you|please|i want you to|make|create|write|show me|help me with)\b/.test(t)) {
       return "request";
     }
-    if (/\?$/.test(t) || /^(what|why|how|when|where|who|which|is|are|do|does|did|can|could)\b/.test(t)) {
+    if (/\b(thanks|thank you|thx|ty)\b/.test(t) && t.length < 40) {
+      return "statement";
+    }
+    if (/\?$/.test(t) || /^(what|why|how|when|where|who|which|is|are|do|does|did|can|could|whats|what's)\b/.test(t)) {
       return "question";
     }
-    if (t.length < 3) return "unclear";
+    if (t.length < 2) return "unclear";
     return "statement";
   }
 
@@ -241,12 +244,12 @@ export class ConversationManager {
 
   _isFollowUp(text) {
     const t = text.toLowerCase().trim();
-    // Very short follow-ups only
-    if (/^(why|how|and|huh|really)\??$/.test(t)) return true;
-    if (t.length > 50) return false;
-    return /^(what about|and that|that one|the second one|the first one|i tried that|what do you mean|ok but)\b/.test(t)
+    if (/^(why|how|and|huh|really|more|continue|go on|and then|what else|same|that|this|it)\??$/.test(t)) return true;
+    if (t.length > 60) return false;
+    return /^(what about|and that|that one|the second one|the first one|i tried that|what do you mean|ok but|tell me more|say more|expand|elaborate)\b/.test(t)
       || /\b(what about (the )?(second|first|other|last) one)\b/.test(t)
-      || /\b(i tried that already)\b/.test(t);
+      || /\b(i tried that already|like i said|as i said|going back)\b/.test(t)
+      || /\b(the (first|second|last|other) (one|option|idea))\b/.test(t);
   }
 
   /**
