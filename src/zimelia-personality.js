@@ -15,6 +15,7 @@
 
 import { RESPONSE_TEMPLATES, createPersonalityConfig } from "./personality-config.js";
 import { classifyCommon, pickCommonResponse, resetCommonResponses } from "./common-responses.js";
+import { detectSelfIntent, getSelfResponse, resetSelfResponses } from "./zimelia-self-responses.js";
 
 const VALID_TONES = [
   "warm", "playful", "serious", "caring",
@@ -43,7 +44,18 @@ export class PersonalitySystem {
     const ctx = context && typeof context === "object" ? context : {};
     const intent = ctx.intent || "unclear";
 
-    // Common responses first, if confident and not a mixed/question case
+    // Self-directed questions first
+    const self = detectSelfIntent(userText, ctx);
+    if (self && self.confidence >= 0.8) {
+      const reply = getSelfResponse(self.intent, { ...ctx, lastUserMessage: userText }, this.config);
+      if (reply) {
+        const tone = self.intent === "SELF_EMOTION" ? "thoughtful" : "warm";
+        this._lastStrategy = "self_" + self.intent.toLowerCase();
+        return { text: this._applyLanguageFlavor(reply, tone), strategy: "self_" + self.intent.toLowerCase(), tone };
+      }
+    }
+
+    // Common responses next, if confident and not a mixed/question case
     const common = classifyCommon(userText, ctx);
     if (common.category && common.confidence >= 0.7 && !common.needsClarification) {
       const tone = this._toneForCommon(common.category, emotionSignal);
@@ -71,6 +83,7 @@ export class PersonalitySystem {
     this.recentTemplates = [];
     this._lastStrategy = null;
     resetCommonResponses();
+    resetSelfResponses();
   }
 
   updateConfig(partial) {
