@@ -79,6 +79,37 @@ async function run() {
     assert(p.getConfig().communicationStyle.playfulness === 0.9, "Personality config is overridable");
   }
 
+  // 9. Follow-up rephrase
+  {
+    const p = new PersonalitySystem();
+    const r = p.respond("I still don't understand", { intent: "follow_up", currentTopic: "javascript" });
+    assert(r.strategy === "rephrase_explanation", "Still-don't-understand uses rephrase strategy");
+    assert(/javascript|that/i.test(r.text), "Rephrase includes topic");
+  }
+
+  // 10. Uncertain emotion ignored
+  {
+    const p = new PersonalitySystem();
+    const r = p.respond("okay", { intent: "statement" }, { label: "sadness", confidence: 0.2, uncertain: true });
+    assert(r.tone !== "caring", "Uncertain low-confidence emotion does not force caring");
+  }
+
+  // 11. Missing template falls back
+  {
+    const p = new PersonalitySystem();
+    const r = p.respond("bye", { intent: "statement", currentTopic: null });
+    assert(r.text && r.text.length > 0, "Missing or farewell path still returns text");
+  }
+
+  // 12. Repeated greetings rotate
+  {
+    const p = new PersonalitySystem();
+    const ctx = { intent: "greeting", currentTopic: null };
+    const set = new Set();
+    for (let i = 0; i < 5; i++) set.add(p.respond("hi", ctx).text);
+    assert(set.size >= 2, "Repeated greetings still rotate");
+  }
+
   console.log("\nAll personality tests passed.\n");
 }
 

@@ -10,6 +10,7 @@ import { ConversationManager } from "./context-manager.js";
 import { PersonalitySystem } from "./zimelia-personality.js";
 import { EmotionEngine } from "./emotion-engine.js";
 import { INTERFACES } from "./interfaces.js";
+import ZUS from "./zus.js";
 
 export const AI_INTERFACE_VERSION = INTERFACES.ai;
 
@@ -55,6 +56,23 @@ export class ZimeliaAI {
     }
 
     const context = this.conversation.getContext();
+
+    // ZUS understanding layer (optional fields for personality)
+    let zus = null;
+    try {
+      zus = ZUS.understand(text, { previousIntent: context.intent });
+    } catch (e) {
+      zus = null;
+    }
+    if (zus) {
+      context.zus = {
+        intent: zus.intent,
+        emotion: zus.emotion,
+        responseType: zus.responseType,
+        needsClarification: zus.needsClarification,
+        confidence: zus.confidence
+      };
+    }
 
     // Emotion analysis (heuristic). Does not generate the reply itself.
     const emotionResult = this.emotion.analyze(text, context);

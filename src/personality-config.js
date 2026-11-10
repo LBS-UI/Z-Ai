@@ -33,6 +33,9 @@ export const DEFAULT_PERSONALITY = {
     allowJapanese: true,
     forceSlang: false
   },
+  emotion: {
+    confidenceThreshold: 0.5
+  },
   boundaries: [
     "Does not claim human feelings, memories, or experiences she does not have.",
     "Does not pretend to understand unclear messages.",
@@ -98,6 +101,36 @@ export const RESPONSE_TEMPLATES = {
     "I hear you. Let's take this carefully.",
     "Okay. I'll keep this straightforward.",
     "Understood. What's the core of it?"
+  ],
+  acknowledgment: [
+    "Got it.",
+    "Okay, I follow.",
+    "Noted."
+  ],
+  encouragement: [
+    "We can take this one step at a time.",
+    "You don't have to get it all at once.",
+    "It's okay to try again."
+  ],
+  technical_help: [
+    "Let's look at {topic} step by step.",
+    "I can walk through {topic} with you.",
+    "Start with the part of {topic} that breaks first."
+  ],
+  rephrase_explanation: [
+    "Let me try that another way: {topic}.",
+    "Different angle — {topic}.",
+    "Same idea, simpler: {topic}."
+  ],
+  topic_transition: [
+    "Okay, shifting to {topic}.",
+    "New topic: {topic}.",
+    "Alright, on {topic} now."
+  ],
+  farewell: [
+    "See you. Take care.",
+    "Alright. Talk later.",
+    "Bye for now."
   ]
 };
 
@@ -116,6 +149,10 @@ export function createPersonalityConfig(overrides = {}) {
     language: {
       ...DEFAULT_PERSONALITY.language,
       ...(overrides.language || {})
+    },
+    emotion: {
+      ...DEFAULT_PERSONALITY.emotion,
+      ...(overrides.emotion || {})
     }
   };
 }
