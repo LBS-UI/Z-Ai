@@ -14,6 +14,7 @@
  */
 
 import { RESPONSE_TEMPLATES, createPersonalityConfig } from "./personality-config.js";
+import { classifyCommon, pickCommonResponse, resetCommonResponses } from "./common-responses.js";
 
 const VALID_TONES = [
   "warm", "playful", "serious", "caring",
@@ -41,6 +42,18 @@ export class PersonalitySystem {
   respond(userText, context, emotionSignal = null) {
     const ctx = context && typeof context === "object" ? context : {};
     const intent = ctx.intent || "unclear";
+
+    // Common responses first, if confident and not a mixed/question case
+    const common = classifyCommon(userText, ctx);
+    if (common.category && common.confidence >= 0.7 && !common.needsClarification) {
+      const tone = this._toneForCommon(common.category, emotionSignal);
+      const reply = pickCommonResponse(common.category, { ...ctx, lastUserMessage: userText });
+      if (reply) {
+        this._lastStrategy = "common_" + common.category;
+        return { text: this._applyLanguageFlavor(reply, tone), strategy: "common_" + common.category, tone };
+      }
+    }
+
     const tone = this._chooseTone(userText, ctx, emotionSignal);
     let strategy = this._chooseStrategy(intent, tone, ctx, userText);
 
@@ -57,6 +70,7 @@ export class PersonalitySystem {
   resetSession() {
     this.recentTemplates = [];
     this._lastStrategy = null;
+    resetCommonResponses();
   }
 
   updateConfig(partial) {
@@ -65,6 +79,15 @@ export class PersonalitySystem {
 
   getConfig() {
     return this.config;
+  }
+
+  _toneForCommon(category, emotionSignal) {
+    const emotion = this._interpretEmotion(emotionSignal);
+    if (emotion === "sadness" || category === "emotional") return "caring";
+    if (category === "laughter" || category === "boredom") return "playful";
+    if (category === "confusion" || category === "about_self") return "thoughtful";
+    if (category === "farewell") return "warm";
+    return "warm";
   }
 
   // ---------- tone ----------
