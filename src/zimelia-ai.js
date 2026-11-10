@@ -11,6 +11,7 @@ import { PersonalitySystem } from "./zimelia-personality.js";
 import { EmotionEngine } from "./emotion-engine.js";
 import { INTERFACES } from "./interfaces.js";
 import ZUS from "./zus.js";
+import { createCodingBrain } from "./zimelia-coding-brain.js";
 
 export const AI_INTERFACE_VERSION = INTERFACES.ai;
 
@@ -24,7 +25,9 @@ export class ZimeliaAI {
     this.conversation = options.conversation || new ConversationManager();
     this.personality = options.personality || new PersonalitySystem(options.personalityConfig || {});
     this.emotion = options.emotion || new EmotionEngine(options.emotionConfig || {});
+    this.coding = options.coding || createCodingBrain();
     this.fallbackResponder = options.fallbackResponder || this._personalityOrDefault.bind(this);
+    this.coding.init().catch(() => {});
   }
 
   /**
@@ -101,6 +104,24 @@ export class ZimeliaAI {
         source: "clarification",
         emotion: emotionResult
       };
+    }
+
+    // Coding Brain only for coding requests
+    if (this.coding && this.coding.isCodingRequest(text)) {
+      const coding = await this.coding.handleRequest(text, context);
+      if (coding && coding.handled && coding.text) {
+        this.conversation.addMessage("assistant", coding.text);
+        return {
+          message: coding.text,
+          context: this.conversation.getContext(),
+          intent: context.intent,
+          source: "coding",
+          strategy: coding.strategy,
+          tone: coding.tone,
+          emotion: emotionResult,
+          meta: coding.meta || null
+        };
+      }
     }
 
     const reply = await this.fallbackResponder(text, context, emotionSignal);

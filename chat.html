@@ -129,6 +129,13 @@ button, input { font: inherit; }
         <button class="send" type="submit" aria-label="Send">➤</button>
       </form>
       <div class="hint">Separate chat window · modules connected</div>
+      <details style="margin-top:12px;color:#a69dbd;font-size:12px;">
+        <summary>Coding Brain</summary>
+        <p id="codingStatus">Offline templates · approval required</p>
+        <button type="button" id="codingPendingBtn">Show pending</button>
+        <button type="button" id="codingExportBtn">Export JSON</button>
+        <pre id="codingOut" style="white-space:pre-wrap;background:#1b1729;padding:8px;border-radius:8px;max-height:160px;overflow:auto;"></pre>
+      </details>
     </div>
   </section>
   <aside class="character-panel">
@@ -152,6 +159,7 @@ import { createZimeliaAI } from "./src/zimelia-ai.js";
 import { ZimeliaVoiceFX } from "./src/zimelia-voice-fx.js";
 
 const brain = createZimeliaAI();
+window.ZimeliaBrain = brain;
 const audio = document.createElement("audio");
 audio.hidden = true;
 document.body.appendChild(audio);
@@ -250,6 +258,23 @@ form.addEventListener("submit", function (e) {
 document.querySelectorAll("[data-prompt]").forEach(function (btn) {
   btn.addEventListener("click", function () { sendMessage(btn.getAttribute("data-prompt")); });
 });
+
+const codingOut = document.getElementById("codingOut");
+const pendingBtn = document.getElementById("codingPendingBtn");
+const exportBtn = document.getElementById("codingExportBtn");
+if (pendingBtn) {
+  pendingBtn.addEventListener("click", async function () {
+    const list = await brain.coding.listPending();
+    if (codingOut) codingOut.textContent = list.length ? JSON.stringify(list, null, 2) : "No pending entries.";
+  });
+}
+if (exportBtn) {
+  exportBtn.addEventListener("click", async function () {
+    const { exportJSON } = await import("./src/coding-memory-store.js");
+    const json = await exportJSON();
+    if (codingOut) codingOut.textContent = json;
+  });
+}
 
 // blink twice every minute
 setInterval(function () {
