@@ -131,10 +131,18 @@ button, input { font: inherit; }
       <div class="hint">Separate chat window · modules connected</div>
       <details style="margin-top:12px;color:#a69dbd;font-size:12px;">
         <summary>Coding Brain</summary>
-        <p id="codingStatus">Offline templates · approval required</p>
-        <button type="button" id="codingPendingBtn">Show pending</button>
-        <button type="button" id="codingExportBtn">Export JSON</button>
-        <pre id="codingOut" style="white-space:pre-wrap;background:#1b1729;padding:8px;border-radius:8px;max-height:160px;overflow:auto;"></pre>
+        <p id="codingStatus">Offline templates · approval required · no auto-exec</p>
+        <div style="display:flex;flex-wrap:wrap;gap:6px;margin:8px 0;">
+          <button type="button" id="codingPendingBtn">Pending</button>
+          <button type="button" id="codingApprovedBtn">Approved</button>
+          <button type="button" id="codingApproveBtn">Approve last</button>
+          <button type="button" id="codingRejectBtn">Reject last</button>
+          <button type="button" id="codingExportBtn">Export JSON</button>
+          <button type="button" id="codingCopyBtn">Copy last code</button>
+          <button type="button" id="codingDownloadBtn">Download</button>
+        </div>
+        <input id="codingSearch" type="text" placeholder="Search knowledge" style="width:100%;margin-bottom:6px;padding:6px;border-radius:8px;border:1px solid #39304d;background:#151220;color:#f8f4ff;" />
+        <pre id="codingOut" style="white-space:pre-wrap;background:#1b1729;padding:8px;border-radius:8px;max-height:180px;overflow:auto;"></pre>
       </details>
     </div>
   </section>
@@ -261,18 +269,69 @@ document.querySelectorAll("[data-prompt]").forEach(function (btn) {
 
 const codingOut = document.getElementById("codingOut");
 const pendingBtn = document.getElementById("codingPendingBtn");
+const approvedBtn = document.getElementById("codingApprovedBtn");
+const approveBtn = document.getElementById("codingApproveBtn");
+const rejectBtn = document.getElementById("codingRejectBtn");
 const exportBtn = document.getElementById("codingExportBtn");
-if (pendingBtn) {
-  pendingBtn.addEventListener("click", async function () {
-    const list = await brain.coding.listPending();
-    if (codingOut) codingOut.textContent = list.length ? JSON.stringify(list, null, 2) : "No pending entries.";
-  });
-}
-if (exportBtn) {
-  exportBtn.addEventListener("click", async function () {
-    const { exportJSON } = await import("./src/coding-memory-store.js");
-    const json = await exportJSON();
-    if (codingOut) codingOut.textContent = json;
+const copyBtn = document.getElementById("codingCopyBtn");
+const downloadBtn = document.getElementById("codingDownloadBtn");
+const searchInput = document.getElementById("codingSearch");
+let lastCode = "";
+
+function show(text) { if (codingOut) codingOut.textContent = text; }
+
+if (pendingBtn) pendingBtn.addEventListener("click", async function () {
+  const list = await brain.coding.listPending();
+  show(list.length ? JSON.stringify(list, null, 2) : "No pending entries.");
+});
+if (approvedBtn) approvedBtn.addEventListener("click", async function () {
+  const list = await brain.coding.listApproved();
+  show(list.length ? JSON.stringify(list, null, 2) : "No approved entries.");
+});
+if (approveBtn) approveBtn.addEventListener("click", async function () {
+  const r = await brain.coding.approveLast();
+  show(r.ok ? "Saved." : "Nothing to approve.");
+});
+if (rejectBtn) rejectBtn.addEventListener("click", async function () {
+  if (!brain.coding.lastProposal) { show("Nothing to reject."); return; }
+  await brain.coding.rejectRecord(brain.coding.lastProposal);
+  show("Rejected.");
+});
+if (exportBtn) exportBtn.addEventListener("click", async function () {
+  const { exportJSON } = await import("./src/coding-memory-store.js");
+  show(await exportJSON());
+});
+if (copyBtn) copyBtn.addEventListener("click", function () {
+  if (!lastCode) { show("No code yet."); return; }
+  navigator.clipboard.writeText(lastCode).then(function () { show("Copied."); }).catch(function () { show(lastCode); });
+});
+if (downloadBtn) downloadBtn.addEventListener("click", function () {
+  if (!lastCode) { show("No code yet."); return; }
+  const blob = new Blob([lastCode], { type: "text/plain" });
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = "zimelia-code.txt";
+  a.click();
+  URL.revokeObjectURL(a.href);
+});
+if (searchInput) searchInput.addEventListener("change", async function () {
+  const { searchKnowledge } = await import("./src/coding-knowledge.js");
+  const hits = await searchKnowledge(searchInput.value);
+  show(hits.length ? JSON.stringify(hits, null, 2) : "No matches.");
+});
+
+const _origSend = sendMessage;
+// capture last code from coding replies
+const _form = document.getElementById("chatForm");
+if (_form) {
+  _form.addEventListener("submit", async function () {
+    setTimeout(async function () {
+      const last = brain.conversation && brain.conversation.getHistory ? brain.conversation.getHistory().slice(-1)[0] : null;
+      if (last && last.role === "assistant" && last.content.indexOf("```") !== -1) {
+        const m = last.content.match(/```[a-z]*\n([\s\S]*?)```/);
+        if (m) lastCode = m[1];
+      }
+    }, 200);
   });
 }
 

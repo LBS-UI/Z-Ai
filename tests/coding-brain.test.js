@@ -6,6 +6,8 @@
 import { _resetFallback, saveRecord, listRecords, exportJSON, importJSON, clearAll } from "../src/coding-memory-store.js";
 import { proposeFromMessage, approve, pending } from "../src/coding-learner.js";
 import { generateOffline } from "../src/code-generator.js";
+import { searchKnowledge } from "../src/coding-knowledge.js";
+import { matchTemplate } from "../src/code-templates.js";
 import { validateCode } from "../src/code-validator.js";
 import { CodingBrain } from "../src/zimelia-coding-brain.js";
 import { ZimeliaAI } from "../src/zimelia-ai.js";
@@ -99,6 +101,19 @@ async function run() {
     const r = await ai.handleMessage("write a javascript function");
     assert(r.source === "coding", "Coding request uses coding brain");
     assert(r.message.indexOf("function") !== -1, "Reply contains code");
+  }
+
+  // 11. Knowledge search ranks relevant
+  {
+    await saveRecord({ type: "coding_concept", language: "javascript", title: "Event listeners", content: "Use addEventListener for clicks.", tags: ["dom", "events"], status: "approved" });
+    const hits = await searchKnowledge("click button addEventListener", { language: "javascript" });
+    assert(hits.length >= 1, "Search returns relevant knowledge");
+  }
+
+  // 12. Template matching
+  {
+    assert(matchTemplate("make a button that clicks") === "dom_click", "Button maps to click template");
+    assert(matchTemplate("css layout") === "css_layout", "CSS maps to layout template");
   }
 
   console.log("\nAll coding brain tests passed.\n");
